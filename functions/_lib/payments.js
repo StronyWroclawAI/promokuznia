@@ -120,7 +120,9 @@ async function stripeCreateSession(env, order, attempt, returnUrl) {
   p.set('line_items[0][price_data][currency]', 'pln');
   p.set('line_items[0][price_data][unit_amount]', String(order.total_gr));
   p.set('line_items[0][price_data][product_data][name]', `Zamówienie ${order.number} — PromoKuźnia`);
-  for (const m of (env.STRIPE_METHODS || 'card,blik,p24').split(',')) p.append('payment_method_types[]', m.trim());
+  // Bez STRIPE_METHODS Stripe pokazuje metody włączone w panelu (Settings → Payment methods).
+  // Z nią — tylko podane, np. card,blik,p24 (każda musi być aktywna na koncie, inaczej sesja się nie utworzy).
+  if (env.STRIPE_METHODS) for (const m of env.STRIPE_METHODS.split(',')) p.append('payment_method_types[]', m.trim());
   p.set('success_url', returnUrl);
   p.set('cancel_url', returnUrl);
   p.set('expires_at', String(Math.floor(Date.now() / 1000) + 31 * 60)); // minimum Stripe to 30 min

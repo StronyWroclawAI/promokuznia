@@ -15,11 +15,9 @@ migrations_dir = "migrations"
 # id = "..."
 
 # Pliki klientów (logo, projekty), później zdjęcia produktów i produkty cyfrowe.
-# Odkomentuj po utworzeniu bucketu: panel → R2 → Create bucket „promokuznia-files”.
-# Bez niego sklep działa, tylko wgrywanie plików zwraca komunikat o braku konfiguracji.
-# [[r2_buckets]]
-# binding = "FILES"
-# bucket_name = "promokuznia-files"
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "promokuznia-files"
 
 [vars]
 SHOP_MODE = "demo"   # demo = pasek „Sklep demonstracyjny”, płatności tylko testowe
