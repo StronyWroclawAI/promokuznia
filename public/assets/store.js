@@ -1,7 +1,7 @@
 // Warstwa danych koszyka i konta. Dwa tryby z tym samym interfejsem:
 //  • apiStore   — prawdziwy sklep: koszyk w D1, sesje HttpOnly, pliki w R2
 //  • localStore — podgląd bez serwera: wszystko w przeglądarce, pliki tylko z nazwy
-import { computeTotals } from './pricing.js';
+import { computeTotals, shippingOptions, paymentOptions } from './pricing.js';
 
 async function call(method, url, body) {
   const init = { method, headers: {}, credentials: 'same-origin' };
@@ -33,7 +33,16 @@ export const apiStore = {
   logout: () => call('POST', '/api/auth/logout'),
   resetRequest: (email) => call('POST', '/api/auth/reset-request', { email }),
   reset: (token, password) => call('POST', '/api/auth/reset', { token, password }),
-  orders: () => call('GET', '/api/account/orders').then((d) => d.orders)
+  orders: () => call('GET', '/api/account/orders').then((d) => d.orders),
+  quote: (opts = {}) => {
+    const q = new URLSearchParams(Object.entries(opts).filter(([, v]) => v));
+    return call('GET', `/api/checkout?${q}`);
+  },
+  checkout: (payload) => call('POST', '/api/checkout', payload),
+  getOrder: (number, t) => call('GET', `/api/order?${new URLSearchParams({ number, ...(t ? { t } : {}) })}`).then((d) => d.order),
+  retryPay: (number, t) => call('POST', '/api/order/pay', { number, t }),
+  simulation: (ref) => call('GET', `/api/payments/simulate?${new URLSearchParams({ ref })}`).then((d) => d.payment),
+  simulate: (ref, outcome, t) => call('POST', '/api/payments/simulate', { ref, outcome, t })
 };
 
 // ───────────── Tryb podglądu ─────────────
@@ -58,7 +67,7 @@ export function createLocalStore(catalog, demoCoupons = []) {
         id: l.id, qty: l.qty, line_total_gr: v.price_gr * l.qty,
         problem: max < l.qty ? (max === 0 ? 'Produkt jest już niedostępny.' : `Dostępne tylko ${max} szt.`) : null,
         variant: { id: v.id, sku: v.sku, label: v.label, price_gr: v.price_gr, max_qty: max },
-        product: { slug: p.slug, name: p.name, type: p.type, shipping_class: p.shipping_class, personalizable: p.personalizable, lead_time_days: p.lead_time_days, art: p.art },
+        product: { slug: p.slug, name: p.name, type: p.type, shipping_class: p.shipping_class, personalizable: p.personalizable, lead_time_days: p.lead_time_days, vat_rate: p.vat_rate, art: p.art },
         upload: l.upload ?? null
       };
     });
@@ -126,6 +135,109 @@ export function createLocalStore(catalog, demoCoupons = []) {
     async logout() { const s = load(); s.customer = null; save(s); },
     async resetRequest() { return { ok: true, message: 'W podglądzie maile nie wychodzą. W prawdziwym sklepie przyjdzie link ważny 60 minut.' }; },
     async reset() { fail('Reset hasła działa tylko w uruchomionym sklepie.'); },
-    async orders() { return []; }
+    async orders() {
+      const s = load();
+      if (!s.customer) return [];
+      return Object.values(s.orders ?? {}).filter((o) => o.email === s.customer.email)
+        .sort((a, b) => b.created_at.localeCompare(a.created_at))
+        .map((o) => ({ number: o.number, status: o.status, status_label: o.status_label, total_gr: o.totals.total_gr, created_at: o.created_at, items: o.items.length }));
+    },
+
+    // ── kasa i zamówienia w podglądzie: ta sama logika cen, płatność przez bramkę testową ──
+    async quote(opts = {}) {
+      const s = load();
+      const cart = view(s);
+      const coupon = demoCoupons.find((c) => c.code === s.coupon_code) ?? null;
+      const providers = { stripe: 'symulator', przelewy24: 'symulator', przelew: 'przelew', pobranie: 'pobranie' };
+      return {
+        demo: true, providers, cart,
+        totals: computeTotals(cart.lines, coupon, opts),
+        shipping_options: shippingOptions(cart.lines),
+        payment_options: paymentOptions(cart.lines, opts.shipping_method).map((p) => ({ ...p, provider: providers[p.method] }))
+      };
+    },
+    async checkout(b) {
+      const s = load();
+      const cart = view(s);
+      if (!cart.lines.length) fail('Koszyk jest pusty.');
+      const physical = cart.lines.some((l) => l.product.type === 'physical');
+      const digital = cart.lines.some((l) => l.product.type === 'digital');
+      if (!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(b.email ?? '')) fail('Podaj poprawny adres e-mail.', 'email');
+      if (physical && !b.shipping_method) fail('Wybierz sposób dostawy.', 'shipping_method');
+      if (physical && !/^\+?[\d\s-]{9,16}$/.test(b.phone ?? '')) fail('Podaj numer telefonu — przewoźnik wyśle na niego SMS.', 'phone');
+      if (physical && String(b.ship_name ?? '').trim().length < 3) fail('Podaj imię i nazwisko odbiorcy.', 'ship_name');
+      if (b.shipping_method === 'paczkomat' && !/^[A-Z]{3}\d{2,3}[A-Z]{1,2}$/.test(String(b.locker_code ?? '').toUpperCase())) fail('Podaj kod Paczkomatu, np. WRO01M.', 'locker_code');
+      if (b.shipping_method === 'kurier_inpost') {
+        if (String(b.ship_street ?? '').trim().length < 3) fail('Podaj ulicę i numer.', 'ship_street');
+        if (!/^\d{2}-\d{3}$/.test(b.ship_postcode ?? '')) fail('Kod pocztowy w formacie 00-000.', 'ship_postcode');
+        if (String(b.ship_city ?? '').trim().length < 2) fail('Podaj miejscowość.', 'ship_city');
+      }
+      if (!b.payment_method) fail('Wybierz sposób płatności.', 'payment_method');
+      if (b.payment_method === 'pobranie' && b.shipping_method !== 'kurier_inpost') fail('Tylko przy dostawie kurierem.', 'payment_method');
+      if (b.terms !== true) fail('Zaakceptuj regulamin, żeby złożyć zamówienie.', 'terms');
+      if (digital && b.digital_consent !== true) fail('Przy produktach cyfrowych potrzebujemy zgody na dostarczenie ich od razu.', 'digital_consent');
+
+      const coupon = demoCoupons.find((c) => c.code === s.coupon_code) ?? null;
+      const totals = computeTotals(cart.lines, coupon, { shipping_method: b.shipping_method, payment_method: b.payment_method });
+      s.orderSeq = (s.orderSeq ?? 0) + 1;
+      const number = `PK/${new Date().getFullYear()}/${String(s.orderSeq).padStart(6, '0')}`;
+      const now = new Date().toISOString();
+      const order = {
+        number, status: 'czeka_na_platnosc', status_label: 'Czeka na płatność', created_at: now, email: b.email.trim().toLowerCase(),
+        payment_method: b.payment_method, payment: { provider: b.payment_method === 'stripe' || b.payment_method === 'przelewy24' ? 'symulator' : b.payment_method, status: 'utworzona', amount_gr: totals.total_gr },
+        can_pay: b.payment_method === 'stripe' || b.payment_method === 'przelewy24',
+        shipping_method: physical ? b.shipping_method : 'brak', locker_code: b.shipping_method === 'paczkomat' ? b.locker_code.toUpperCase() : null,
+        shipping: physical ? { name: b.ship_name, street: b.ship_street, postcode: b.ship_postcode, city: b.ship_city } : null,
+        billing: b.invoice ? { company: b.bill_company, nip: b.bill_nip, street: b.bill_street, postcode: b.bill_postcode, city: b.bill_city } : null,
+        totals: { subtotal_gr: totals.subtotal_gr, discount_gr: totals.discount_gr, shipping_gr: totals.shipping?.price_gr ?? 0, total_gr: totals.total_gr, vat_gr: totals.vat_gr, coupon_code: totals.coupon?.ok ? totals.coupon.code : null },
+        items: cart.lines.map((l) => ({ name: l.product.name, variant_label: l.variant.label, sku: l.variant.sku, unit_price_gr: l.variant.price_gr, qty: l.qty, line_total_gr: l.line_total_gr, product_type: l.product.type, product_slug: l.product.slug, project_status: l.product.personalizable ? 'czeka' : null, has_file: !!l.upload })),
+        events: [{ status: 'czeka_na_platnosc', label: 'Czeka na płatność', at: now, note: null }],
+        downloads: [], gift_cards: [], local: true,
+        bank_transfer: b.payment_method === 'przelew' ? { recipient: 'PromoKuźnia — sklep demonstracyjny', account: 'PL00 0000 0000 0000 0000 0000 0000', title: number, amount_gr: totals.total_gr, demo: true } : null
+      };
+      s.orders = { ...(s.orders ?? {}), [number]: order };
+      s.lines = []; s.coupon_code = null;
+      if (b.payment_method === 'pobranie') finalizeLocal(order, false);
+      save(s);
+      return { order: { number, access_token: null }, local_route: order.can_pay ? 'symulator-platnosci' : 'zamowienie' };
+    },
+    async getOrder(number) { return load().orders?.[number] ?? fail('Nie znaleziono zamówienia w tej przeglądarce.'); },
+    async retryPay(number) {
+      const s = load();
+      const o = s.orders?.[number] ?? fail('Nie znaleziono zamówienia.');
+      if (o.status !== 'czeka_na_platnosc') fail('To zamówienie nie czeka już na płatność.');
+      o.payment.status = 'utworzona';
+      save(s);
+      return { order: { number }, local_route: 'symulator-platnosci' };
+    },
+    async simulation(number) {
+      const o = load().orders?.[number] ?? fail('Ta płatność testowa nie istnieje.');
+      return { number, amount_gr: o.totals.total_gr, status: o.payment.status, method: o.payment_method, email: o.email };
+    },
+    async simulate(number, outcome) {
+      const s = load();
+      const o = s.orders?.[number] ?? fail('Ta płatność testowa nie istnieje.');
+      if (o.status !== 'czeka_na_platnosc') fail('Ta płatność została już rozliczona.');
+      if (outcome === 'paid') finalizeLocal(o, true);
+      else { o.payment.status = 'odrzucona'; o.events.push({ status: o.status, label: 'Czeka na płatność', at: new Date().toISOString(), note: 'Płatność testowa odrzucona.' }); }
+      save(s);
+      return { order: { number }, local_route: 'zamowienie' };
+    }
   };
+
+  function finalizeLocal(o, paid) {
+    const LABEL = { oplacone: 'Opłacone', akceptacja_projektu: 'Akceptacja projektu', w_realizacji: 'W realizacji', zrealizowane: 'Zrealizowane' };
+    const at = new Date().toISOString();
+    const to = o.items.some((i) => i.project_status === 'czeka') ? 'akceptacja_projektu'
+      : o.items.some((i) => i.product_type === 'physical' || i.product_type === 'service') ? 'w_realizacji' : 'zrealizowane';
+    if (paid) { o.payment.status = 'oplacona'; o.events.push({ status: 'oplacone', label: LABEL.oplacone, at, note: 'Bramka testowa (podgląd)' }); }
+    o.events.push({ status: to, label: LABEL[to], at, note: paid ? null : 'Płatność przy odbiorze — przekazane do realizacji.' });
+    o.status = to; o.status_label = LABEL[to]; o.can_pay = false; o.bank_transfer = null;
+    o.downloads = o.items.filter((i) => i.product_type === 'digital').map((i) => ({ name: i.name, url: null, left: 5, expires_at: new Date(Date.now() + 7 * 864e5).toISOString() }));
+    const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    o.gift_cards = o.items.filter((i) => i.product_type === 'gift_card').flatMap((i) => Array.from({ length: i.qty }, () => ({
+      code: `PK-${Array.from({ length: 12 }, () => abc[Math.floor(Math.random() * abc.length)]).join('').replace(/(.{4})(.{4})(.{4})/, '$1-$2-$3')}`,
+      balance_gr: i.unit_price_gr, valid_until: new Date(Date.now() + 365 * 864e5).toISOString()
+    })));
+  }
 }

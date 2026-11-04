@@ -60,7 +60,7 @@ export async function cartView(db, cart) {
   const { results } = await db.prepare(
     `SELECT ci.id, ci.qty, ci.upload_id,
             v.id AS variant_id, v.sku, v.label, v.price_gr, v.stock, v.reserved,
-            p.slug, p.name, p.type, p.shipping_class, p.personalizable, p.art_shape, p.art_tone, p.lead_time_days,
+            p.slug, p.name, p.type, p.shipping_class, p.personalizable, p.art_shape, p.art_tone, p.lead_time_days, p.vat_rate,
             u.filename AS upload_name, u.size AS upload_size, u.mime AS upload_mime
        FROM cart_items ci
        JOIN variants v ON v.id = ci.variant_id
@@ -80,7 +80,7 @@ export async function cartView(db, cart) {
       variant: { id: r.variant_id, sku: r.sku, label: r.label, price_gr: r.price_gr, max_qty: available },
       product: {
         slug: r.slug, name: r.name, type: r.type, shipping_class: r.shipping_class,
-        personalizable: !!r.personalizable, lead_time_days: r.lead_time_days,
+        personalizable: !!r.personalizable, lead_time_days: r.lead_time_days, vat_rate: r.vat_rate,
         art: { shape: r.art_shape, tone: r.art_tone }
       },
       upload: r.upload_id ? { id: r.upload_id, filename: r.upload_name, size: r.upload_size, mime: r.upload_mime } : null

@@ -12,7 +12,7 @@ Stack: **Cloudflare Pages + Pages Functions + D1** (później KV, R2, Cron), fro
 | 1 | Szkielet, schemat bazy D1, 26 produktów / 51 wariantów, identyfikacja | gotowe |
 | 2 | Katalog: strona główna, kategorie, wyszukiwarka, karta produktu, API | gotowe |
 | 3 | Koszyk w D1, konto klienta, upload plików do R2, kody rabatowe | gotowe |
-| 4 | Checkout, Stripe test + Przelewy24 sandbox, webhooki | — |
+| 4 | Kasa, zamówienia, Stripe + Przelewy24 + bramka testowa, przelew, pobranie, webhooki | gotowe |
 | 5 | InPost ShipX + Geowidget, Furgonetka | — |
 | 6 | Panel admina, maile (Resend), faktury (Fakturownia) | — |
 | 7 | Regulamin, RODO, Omnibus, testy | Omnibus już liczony |
@@ -64,6 +64,14 @@ functions/              API (Pages Functions)
   api/cart/…                  GET /api/cart, POST/PATCH/DELETE /api/cart/items, POST/DELETE /api/cart/coupon
   api/auth/…                  register, login, logout, me, reset-request, reset
   api/account/orders.js       historia zamówień
+  api/checkout.js             GET wycena dla dostawy i płatności, POST złożenie zamówienia
+  api/order/…                 GET /api/order?number=&t=, POST /api/order/pay (ponowna płatność)
+  api/webhooks/stripe.js      powiadomienia Stripe (podpis HMAC, idempotencja)
+  api/webhooks/przelewy24.js  powiadomienia P24 (podpis SHA-384 + transaction/verify)
+  api/payments/simulate.js    bramka testowa w trybie demo, gdy brak kluczy
+  api/downloads/[token].js    produkty cyfrowe: link ważny 7 dni, 5 pobrań
+  _lib/orders.js              zamówienie z koszyka w jednej transakcji, finalizacja, wygaszanie rezerwacji
+  _lib/payments.js            Stripe Checkout, Przelewy24 REST, wspólne oznaczanie płatności
   api/uploads/…               POST /api/uploads (R2), GET/DELETE /api/uploads/:id (tylko właściciel)
   _lib/catalog.js             zapytania D1, Omnibus (najniższa cena z 30 dni)
   _lib/cart.js                koszyk gościa (ciasteczko) i klienta, łączenie po zalogowaniu
@@ -73,6 +81,7 @@ public/assets/store.js        koszyk i konto: przez API albo lokalnie w podgląd
 migrations/0001_init.sql      pełny schemat: katalog, klienci, koszyk, zamówienia,
                               płatności (idempotencja webhooków), wysyłki, rabaty, bony, pobrania
 migrations/0002_…sql          sesje, reset hasła, pliki klientów
+migrations/0003_…sql          token dostępu do zamówienia, płatności z próbami i symulatorem
 seed/catalog.json             źródło asortymentu — edytuj tutaj
 scripts/build-seed.mjs        catalog.json → seed/seed.sql + public/data/catalog.json
 scripts/build-preview.mjs     cały sklep w jednym pliku HTML (dist/)
@@ -101,3 +110,32 @@ Kwoty w bazie zawsze w groszach (INTEGER). Rezerwacja stanów pilnowana przez `C
 - Pliki: typ rozpoznawany po zawartości (PDF, PNG, JPG, SVG, AI, EPS), limit 20 MB, podgląd tylko dla właściciela koszyka, SVG wyłącznie do pobrania.
 - Ceny, rabaty i dostawę liczy serwer; front pokazuje to, co zwróci API.
 - Do zrobienia w Etapie 7: limit prób logowania, Turnstile na formularzach, sprzątanie starych koszyków i plików przez Cron.
+
+## Zamówienia i płatności (Etap 4)
+
+Ścieżka: koszyk → `#kasa` → `POST /api/checkout` → bramka → powiadomienie → `#zamowienie`.
+
+1. Serwer liczy kwotę sam (`pricing.js`) i porównuje z `expected_total_gr` z formularza — jeśli ceny się zmieniły, odrzuca zamówienie z komunikatem.
+2. Zamówienie, pozycje (kopia nazw i cen), rezerwacja stanów, użycie kodu rabatowego i opróżnienie koszyka zapisują się w jednym `db.batch` (transakcja D1). Za mało towaru → `CHECK (stock >= reserved)` cofa całość.
+3. Rezerwacja: 35 min przy płatności online, 3 dni przy przelewie. Po terminie zamówienie przechodzi w „Anulowane”, towar wraca do sprzedaży (`releaseExpired` — wołane przy kasie, podglądzie zamówienia i webhookach; Worker z Cron w Etapie 6).
+4. Strona powrotu z bramki niczego nie oznacza jako opłacone — robi to dopiero podpisany webhook. Każde zdarzenie zapisuje się raz (`payment_events`), druga kopia nic nie zmienia.
+5. Po płatności: stan magazynowy maleje, produkty cyfrowe dostają linki, karty podarunkowe kody, a status zależy od zawartości (akceptacja projektu / w realizacji / zrealizowane).
+6. Nieudana płatność nie kasuje zamówienia — klient może zapłacić ponownie ze strony zamówienia.
+
+Gość widzi zamówienie przez link z tokenem (`?zamowienie=…&t=…`), zalogowany klient — z historii na koncie.
+
+### Podłączenie Stripe (tryb testowy)
+
+1. Konto na stripe.com → przełącznik **Test mode** → Developers → API keys → `sk_test_…` do `.dev.vars` jako `STRIPE_SECRET_KEY`.
+2. Settings → Payment methods: włącz **BLIK** i **Przelewy24** (karty są domyślnie).
+3. Lokalnie: `stripe listen --forward-to localhost:8788/api/webhooks/stripe` → wypisany `whsec_…` do `STRIPE_WEBHOOK_SECRET`.
+4. Na Cloudflare: Developers → Webhooks → endpoint `https://<domena>/api/webhooks/stripe`, zdarzenia `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`; sekrety przez `npx wrangler pages secret put`.
+5. Testowo: karta `4242 4242 4242 4242`, dowolna przyszła data i CVC; BLIK — dowolny 6-cyfrowy kod.
+
+### Podłączenie Przelewy24 (sandbox)
+
+1. Konto sandbox: przelewy24.pl → rejestracja konta testowego (sandbox.przelewy24.pl).
+2. Panel → Moje dane → Dane API: `P24_MERCHANT_ID`, `P24_POS_ID`, `P24_API_KEY` (klucz do raportów), `P24_CRC`.
+3. Powiadomienia przychodzą na `/api/webhooks/przelewy24` — adres podawany automatycznie przy rejestracji transakcji (sandbox musi widzieć sklep z internetu, więc testuj na wdrożonej wersji lub przez tunel `cloudflared`).
+
+Bez kluczy, przy `SHOP_MODE = "demo"`, obie metody przechodzą przez **bramkę testową** w sklepie (`#symulator-platnosci`), która wywołuje tę samą logikę co prawdziwe powiadomienie.

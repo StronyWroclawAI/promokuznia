@@ -2,13 +2,11 @@ name = "promokuznia"
 pages_build_output_dir = "./public"
 compatibility_date = "2026-09-01"
 
-# Baza zamówień i katalogu.
-# 1) npx wrangler d1 create promokuznia-db
-# 2) wklej zwrócone database_id poniżej (lokalnie działa też z tym zastępczym)
+# Baza zamówień i katalogu (Cloudflare D1, utworzona w panelu).
 [[d1_databases]]
 binding = "DB"
 database_name = "promokuznia-db"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "8a23f9da-15a7-4566-be65-4eaf13e3dbc2"
 migrations_dir = "migrations"
 
 # Etap 3+: cache katalogu i sesje
@@ -17,10 +15,11 @@ migrations_dir = "migrations"
 # id = "..."
 
 # Pliki klientów (logo, projekty), później zdjęcia produktów i produkty cyfrowe.
-# npx wrangler r2 bucket create promokuznia-files
-[[r2_buckets]]
-binding = "FILES"
-bucket_name = "promokuznia-files"
+# Odkomentuj po utworzeniu bucketu: panel → R2 → Create bucket „promokuznia-files”.
+# Bez niego sklep działa, tylko wgrywanie plików zwraca komunikat o braku konfiguracji.
+# [[r2_buckets]]
+# binding = "FILES"
+# bucket_name = "promokuznia-files"
 
 [vars]
 SHOP_MODE = "demo"   # demo = pasek „Sklep demonstracyjny”, płatności tylko testowe

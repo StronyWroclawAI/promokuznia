@@ -1,4 +1,5 @@
 import { json, problem } from '../../_lib/http.js';
+import { STATUS_LABEL } from '../../_lib/orders.js';
 
 // GET /api/account/orders — historia zamówień zalogowanego klienta
 export async function onRequestGet({ env, data }) {
@@ -6,7 +7,7 @@ export async function onRequestGet({ env, data }) {
   const { results } = await env.DB.prepare(
     `SELECT number, status, total_gr, created_at,
             (SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id) AS items
-       FROM orders o WHERE customer_id = ? ORDER BY created_at DESC LIMIT 50`
+       FROM orders o WHERE customer_id = ? ORDER BY created_at DESC, id DESC LIMIT 50`
   ).bind(data.customer.id).all();
-  return json({ orders: results });
+  return json({ orders: results.map((o) => ({ ...o, status_label: STATUS_LABEL[o.status] })) });
 }

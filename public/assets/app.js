@@ -536,8 +536,8 @@ function renderCart() {
              <div class="coupon-row"><input id="coupon-input" name="code" autocomplete="off" placeholder="np. START10"><button class="btn" type="submit">Użyj</button></div>`}
       </form>
       ${needsFile ? `<p class="small">${needsFile === 1 ? 'Jeden produkt czeka' : `${needsFile} produkty czekają`} na plik z logo. Możesz go też dosłać po złożeniu zamówienia.</p>` : ''}
-      <button class="btn btn-primary" type="button" disabled>Przejdź do kasy</button>
-      <p class="small">${blocked ? 'Popraw ilości oznaczone na czerwono. ' : ''}Kasa, BLIK i Przelewy24 w trybie testowym powstaną w Etapie 4.</p>
+      ${blocked ? '<button class="btn btn-primary" type="button" disabled>Przejdź do kasy</button><p class="small">Popraw ilości oznaczone na czerwono.</p>'
+        : '<a class="btn btn-primary" href="#kasa">Przejdź do kasy</a><p class="small">Dostawę i płatność wybierzesz w następnym kroku.</p>'}
     </aside>
   </div>`;
 }
@@ -680,8 +680,9 @@ function bindAccount() {
     store.orders().then((list) => {
       orders.innerHTML = list.length
         ? `<table class="spec"><thead><tr><th>Numer</th><th>Data</th><th>Status</th><th>Kwota</th></tr></thead><tbody>${list.map((o) =>
-          `<tr><td>${esc(o.number)}</td><td>${new Date(o.created_at).toLocaleDateString('pl-PL')}</td><td>${esc(STATUS_PL[o.status] ?? o.status)}</td><td>${zl(o.total_gr)}</td></tr>`).join('')}</tbody></table>`
-        : '<div class="empty" style="padding:0"><p class="muted">Nie masz jeszcze zamówień. Składanie zamówień ruszy w Etapie 4.</p><a class="btn" href="#wszystkie">Przejrzyj asortyment</a></div>';
+          `<tr><td><a href="#zamowienie" data-order="${esc(o.number)}">${esc(o.number)}</a></td><td>${new Date(o.created_at).toLocaleDateString('pl-PL')}</td><td><span class="status-pill" data-status="${esc(o.status)}">${esc(STATUS_PL[o.status] ?? o.status)}</span></td><td>${zl(o.total_gr)}</td></tr>`).join('')}</tbody></table>`
+        : '<div class="empty" style="padding:0"><p class="muted">Nie masz jeszcze zamówień.</p><a class="btn" href="#wszystkie">Przejrzyj asortyment</a></div>';
+      orders.querySelectorAll('[data-order]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); openOrder(a.dataset.order, null); }));
     }).catch((err) => { orders.innerHTML = `<p class="muted">${esc(err.message)}</p>`; });
   }
 }
@@ -735,6 +736,377 @@ function bindNewPassword() {
   });
 }
 
+// ───────────── Kasa ─────────────
+
+const urlParam = (k) => new URLSearchParams(location.search).get(k);
+
+// Po złożeniu zamówienia / płatności: w sklepie przekierowanie z serwera, w podglądzie zmiana widoku
+function follow(result) {
+  if (result.local_route) {
+    state.orderRef = result.order.number;
+    location.hash = result.local_route;
+    if (location.hash === `#${result.local_route}`) onRoute();
+    return;
+  }
+  location.assign(result.redirect_url);
+}
+
+function openOrder(number, token) {
+  if (state.store.mode === 'local') { state.orderRef = number; location.hash = 'zamowienie'; onRoute(); return; }
+  const q = new URLSearchParams({ zamowienie: number });
+  if (token) q.set('t', token);
+  location.assign(`/?${q}#zamowienie`);
+}
+
+function renderCheckout() {
+  return `<div class="page-head"><div class="crumbs"><a href="#start">Start</a><span>/</span><a href="#koszyk">Koszyk</a><span>/</span><span>Kasa</span></div><h1 class="h2">Kasa</h1></div>
+  <div id="checkout"><p class="muted">Przygotowuję podsumowanie…</p></div>`;
+}
+
+const field = (id, label, attrs = '', hint = '') =>
+  `<div class="field"><label for="${id}">${label}</label><input id="${id}" name="${id.replace(/^co-/, '')}" ${attrs}>${hint ? `<small class="muted">${hint}</small>` : ''}</div>`;
+
+function checkoutSummary(q) {
+  const t = q.totals;
+  return `<p class="eyebrow">Twoje zamówienie</p>
+    <ul class="co-lines">${q.cart.lines.map((l) => `<li><span>${esc(l.product.name)} <span class="muted">· ${esc(l.variant.label)} × ${l.qty}</span></span><span class="mono">${zl(l.line_total_gr)}</span></li>`).join('')}</ul>
+    <dl>
+      <dt>Produkty</dt><dd>${zl(t.subtotal_gr)}</dd>
+      ${t.discount_gr ? `<dt>Rabat ${esc(t.coupon.code)}</dt><dd>−${zl(t.discount_gr)}</dd>` : ''}
+      ${t.shipping ? `<dt>${esc(t.shipping.label)}</dt><dd>${t.shipping.base_gr ? zl(t.shipping.base_gr) : 'gratis'}</dd>` : ''}
+      ${t.shipping?.cod_fee_gr ? `<dt>Opłata za pobranie</dt><dd>${zl(t.shipping.cod_fee_gr)}</dd>` : ''}
+      <dt class="total">Do zapłaty</dt><dd class="total">${zl(t.total_gr)}</dd>
+    </dl>
+    <p class="small">W tym VAT ${zl(t.vat_gr)}.</p>`;
+}
+
+async function bindCheckout() {
+  const box = document.getElementById('checkout');
+  const store = state.store;
+  let q;
+  try { q = await store.quote(); } catch (err) { box.innerHTML = `<p class="muted">${esc(err.message)}</p>`; return; }
+  if (!q.cart.lines.length) {
+    box.innerHTML = '<div class="empty"><p class="h3">Koszyk jest pusty.</p><a class="btn btn-primary" href="#wszystkie">Wróć do zakupów</a></div>';
+    return;
+  }
+  if (q.cart.lines.some((l) => l.problem)) { location.hash = 'koszyk'; return; }
+
+  const physical = q.cart.lines.some((l) => l.product.type === 'physical');
+  const digital = q.cart.lines.some((l) => l.product.type === 'digital');
+  const shipOpts = q.shipping_options;
+  const firstShip = shipOpts.find((o) => o.available && o.method !== 'odbior');
+  const c = state.customer;
+  const free = q.totals.missing_for_free_shipping_gr === 0 && q.totals.shipping && q.totals.shipping.base_gr === 0;
+
+  box.innerHTML = `<form class="checkout" id="checkout-form" novalidate>
+    <div class="co-main">
+      ${q.demo ? `<p class="note">Sklep demonstracyjny${store.mode === 'local' ? ' w podglądzie' : ''}: płatność online przejdzie przez bramkę testową i nie pobierze pieniędzy.</p>` : ''}
+      <section class="co-step">
+        <h2 class="h3"><span class="step-no">1</span>Kontakt</h2>
+        ${!c ? '<p class="small">Masz konto? <a href="#konto">Zaloguj się</a>, żeby zamówienie trafiło do historii. Możesz też kupić bez konta.</p>' : ''}
+        <div class="co-grid">
+          ${field('co-email', 'E-mail', `type="email" autocomplete="email" required value="${esc(c?.email ?? '')}"`, 'Wyślemy tu potwierdzenie i link do zamówienia.')}
+          ${field('co-phone', `Telefon${physical ? '' : ' <span class="muted">(opcjonalnie)</span>'}`, 'type="tel" autocomplete="tel" inputmode="tel" placeholder="600 100 200"', physical ? 'Na ten numer przyjdzie SMS od przewoźnika.' : '')}
+        </div>
+      </section>
+
+      ${physical ? `<section class="co-step">
+        <h2 class="h3"><span class="step-no">2</span>Dostawa</h2>
+        <fieldset class="choice-list" id="ship-choices"><legend class="sr-only">Sposób dostawy</legend>
+          ${shipOpts.map((o) => `<label class="choice${o.available ? '' : ' is-off'}">
+            <input type="radio" name="shipping_method" value="${o.method}" ${o === firstShip ? 'checked' : ''} ${o.available ? '' : 'disabled'}>
+            <span class="choice-body"><span class="choice-title">${esc(o.label)}</span>
+              <span class="small">${o.reason ? esc(o.reason) : o.method === 'odbior' ? 'ul. Kowalska 12, Wrocław (adres przykładowy) · pon–pt 9–17' : o.method === 'paczkomat' ? 'Odbiór 24/7, SMS z kodem' : 'Doręczenie pod drzwi w 1–2 dni robocze'}</span></span>
+            <span class="choice-price mono">${o.method === 'odbior' ? 'gratis' : free && o.free_over_threshold ? 'gratis' : zl(o.price_gr)}</span>
+          </label>`).join('')}
+        </fieldset>
+        <div class="co-grid">
+          ${field('co-ship_name', 'Imię i nazwisko odbiorcy', `autocomplete="name" required value="${esc(c?.first_name ?? '')}"`)}
+          <div data-ship="paczkomat">${field('co-locker_code', 'Kod Paczkomatu', 'autocomplete="off" placeholder="np. WRO01M" maxlength="9" style="text-transform:uppercase"', 'Mapę Paczkomatów (InPost Geowidget) dodamy w Etapie 5. Na razie wpisz kod ręcznie.')}</div>
+        </div>
+        <div class="co-grid" data-ship="kurier_inpost">
+          ${field('co-ship_street', 'Ulica i numer', 'autocomplete="address-line1"')}
+          <div class="co-grid two">
+            ${field('co-ship_postcode', 'Kod pocztowy', 'autocomplete="postal-code" inputmode="numeric" placeholder="00-000" maxlength="6"')}
+            ${field('co-ship_city', 'Miejscowość', 'autocomplete="address-level2"')}
+          </div>
+        </div>
+      </section>` : ''}
+
+      <section class="co-step">
+        <h2 class="h3"><span class="step-no">${physical ? 3 : 2}</span>Płatność</h2>
+        <fieldset class="choice-list" id="pay-choices"><legend class="sr-only">Sposób płatności</legend></fieldset>
+        <label class="check"><input type="checkbox" name="invoice" id="co-invoice"><span>Chcę fakturę na firmę</span></label>
+        <div class="co-grid" id="invoice-fields" hidden>
+          ${field('co-bill_company', 'Nazwa firmy', 'autocomplete="organization"')}
+          ${field('co-bill_nip', 'NIP', 'inputmode="numeric" placeholder="000-000-00-00" maxlength="13"')}
+          ${field('co-bill_street', 'Ulica i numer', 'autocomplete="off"')}
+          <div class="co-grid two">
+            ${field('co-bill_postcode', 'Kod pocztowy', 'inputmode="numeric" placeholder="00-000" maxlength="6"')}
+            ${field('co-bill_city', 'Miejscowość')}
+          </div>
+        </div>
+      </section>
+
+      <section class="co-step">
+        <h2 class="h3"><span class="step-no">${physical ? 4 : 3}</span>Uwagi i zgody</h2>
+        <div class="field"><label for="co-note">Uwagi do zamówienia <span class="muted">(opcjonalnie)</span></label><textarea id="co-note" name="note" rows="2" maxlength="500" placeholder="np. kolor logo zgodny z Pantone 1795 C"></textarea></div>
+        <label class="check"><input type="checkbox" name="terms" id="co-terms"><span>Akceptuję regulamin sklepu i zapoznałem się z polityką prywatności. <span class="muted">(Treść dokumentów dodamy w Etapie 7.)</span></span></label>
+        ${digital ? '<label class="check"><input type="checkbox" name="digital_consent" id="co-digital_consent"><span>Chcę otrzymać produkty cyfrowe od razu po płatności. Wiem, że po rozpoczęciu pobierania tracę prawo odstąpienia od umowy.</span></label>' : ''}
+        ${q.cart.lines.some((l) => l.product.personalizable) ? '<p class="small">Produkty z logo wykonujemy według Twojego projektu, więc nie można ich zwrócić bez wady. Przed drukiem wyślemy podgląd do akceptacji.</p>' : ''}
+      </section>
+    </div>
+
+    <aside class="summary co-summary" aria-label="Podsumowanie zamówienia">
+      <div id="co-summary">${checkoutSummary(q)}</div>
+      <p class="form-error" role="alert" hidden></p>
+      <button class="btn btn-primary" type="submit" id="co-submit">Zamawiam i płacę</button>
+      <p class="small">Klikając, składasz zamówienie z obowiązkiem zapłaty.</p>
+      <a class="small" href="#koszyk">Wróć do koszyka</a>
+    </aside>
+  </form>`;
+
+  const form = document.getElementById('checkout-form');
+  const payBox = document.getElementById('pay-choices');
+  const submit = document.getElementById('co-submit');
+  let lastQuote = q;
+
+  const values = () => {
+    const d = Object.fromEntries(new FormData(form));
+    return {
+      ...d,
+      locker_code: (d.locker_code ?? '').toUpperCase().trim(),
+      invoice: d.invoice === 'on', terms: d.terms === 'on', digital_consent: d.digital_consent === 'on'
+    };
+  };
+
+  const renderPayments = (opts, selected) => {
+    const pick = opts.find((o) => o.method === selected && o.available) ?? opts.find((o) => o.available);
+    payBox.innerHTML = '<legend class="sr-only">Sposób płatności</legend>' + opts.map((o) => `<label class="choice${o.available ? '' : ' is-off'}">
+      <input type="radio" name="payment_method" value="${o.method}" ${o === pick ? 'checked' : ''} ${o.available ? '' : 'disabled'}>
+      <span class="choice-body"><span class="choice-title">${esc(o.label)}${o.provider === 'symulator' ? ' <span class="tag">testowo</span>' : ''}</span>
+        <span class="small">${esc(o.reason ?? o.note)}</span></span>
+    </label>`).join('');
+  };
+
+  const syncShipping = () => {
+    const m = form.querySelector('[name="shipping_method"]:checked')?.value;
+    form.querySelectorAll('[data-ship]').forEach((el) => { el.hidden = el.dataset.ship !== m; });
+  };
+
+  let seq = 0;
+  const requote = async () => {
+    const v = values();
+    const my = ++seq;
+    try {
+      const nq = await store.quote({ shipping_method: v.shipping_method, payment_method: v.payment_method });
+      if (my !== seq) return;
+      lastQuote = nq;
+      renderPayments(nq.payment_options, v.payment_method);
+      // opłata za pobranie zależy od płatności wybranej po przerysowaniu
+      const after = values();
+      const fq = after.payment_method !== v.payment_method ? await store.quote({ shipping_method: after.shipping_method, payment_method: after.payment_method }) : nq;
+      if (my !== seq) return;
+      lastQuote = fq;
+      document.getElementById('co-summary').innerHTML = checkoutSummary(fq);
+      submit.textContent = after.payment_method === 'przelew' || after.payment_method === 'pobranie'
+        ? `Zamawiam z obowiązkiem zapłaty · ${zl(fq.totals.total_gr)}` : `Zamawiam i płacę · ${zl(fq.totals.total_gr)}`;
+    } catch (err) { toast(err.message, false); }
+  };
+
+  renderPayments(q.payment_options, null);
+  syncShipping();
+  requote();
+
+  form.addEventListener('change', (e) => {
+    if (e.target.name === 'shipping_method') { syncShipping(); requote(); }
+    if (e.target.name === 'payment_method') requote();
+    if (e.target.name === 'invoice') document.getElementById('invoice-fields').hidden = !e.target.checked;
+    if (e.target.getAttribute('aria-invalid')) e.target.removeAttribute('aria-invalid');
+  });
+  form.querySelector('[name="ship_postcode"]')?.addEventListener('input', (e) => {
+    const d = e.target.value.replace(/\D/g, '').slice(0, 5);
+    e.target.value = d.length > 2 ? `${d.slice(0, 2)}-${d.slice(2)}` : d;
+  });
+  form.querySelector('[name="bill_postcode"]')?.addEventListener('input', (e) => {
+    const d = e.target.value.replace(/\D/g, '').slice(0, 5);
+    e.target.value = d.length > 2 ? `${d.slice(0, 2)}-${d.slice(2)}` : d;
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const errBox = form.querySelector('.form-error');
+    errBox.hidden = true;
+    form.querySelectorAll('[aria-invalid]').forEach((i) => i.removeAttribute('aria-invalid'));
+    const v = values();
+    submit.disabled = true;
+    const label = submit.textContent;
+    submit.textContent = 'Składam zamówienie…';
+    store.checkout({ ...v, expected_total_gr: lastQuote.totals.total_gr }).then(async (res) => {
+      setCart(await store.getCart());
+      if (res.warning) toast(res.warning, false);
+      follow(res);
+    }).catch((err) => {
+      errBox.textContent = err.message;
+      errBox.hidden = false;
+      const bad = err.field && form.querySelector(`[name="${err.field}"]`);
+      if (bad) { bad.setAttribute('aria-invalid', 'true'); bad.focus(); }
+      if (err.status === 409) requote();
+      submit.disabled = false;
+      submit.textContent = label;
+    });
+  });
+}
+
+// ───────────── Bramka testowa ─────────────
+
+function renderSimulator() {
+  return `<div class="gateway" id="gateway"><p class="muted">Łączę z bramką testową…</p></div>`;
+}
+
+async function bindSimulator() {
+  const box = document.getElementById('gateway');
+  const ref = urlParam('platnosc') ?? state.orderRef;
+  const token = urlParam('t');
+  let p;
+  try { p = await state.store.simulation(ref); } catch (err) {
+    box.innerHTML = `<div class="empty"><h1 class="h2">Płatność niedostępna</h1><p class="muted">${esc(err.message)}</p><a class="btn" href="#konto">Moje zamówienia</a></div>`;
+    return;
+  }
+  const method = p.method === 'przelewy24' ? 'Przelewy24' : 'Stripe';
+  box.innerHTML = `<div class="gw-card">
+    <div class="gw-head"><span class="mono">BRAMKA TESTOWA · ${esc(method)}</span><span class="tag">bez prawdziwych pieniędzy</span></div>
+    <p class="small">Płatność dla</p>
+    <p class="h3">PromoKuźnia · ${esc(p.number)}</p>
+    <p class="gw-amount">${zl(p.amount_gr)}</p>
+    <div class="blik" aria-hidden="true"><span>BLIK</span><span class="mono">777 123</span></div>
+    <p class="small">W prawdziwym sklepie w tym miejscu jest strona ${esc(method)} z BLIK-iem, kartą i przelewem. Tutaj wybierasz wynik płatności, a sklep przechodzi tę samą ścieżkę, co po prawdziwym powiadomieniu z bramki.</p>
+    ${p.status === 'utworzona' ? `<div class="gw-actions">
+      <button class="btn btn-primary" type="button" data-outcome="paid">Zapłać ${zl(p.amount_gr)}</button>
+      <button class="btn" type="button" data-outcome="failed">Odrzuć płatność</button>
+    </div>` : `<p class="note">Ta płatność została już rozliczona.</p><button class="btn" type="button" id="gw-back">Wróć do zamówienia</button>`}
+  </div>`;
+  box.querySelectorAll('[data-outcome]').forEach((b) => b.addEventListener('click', () => {
+    box.querySelectorAll('button').forEach((x) => { x.disabled = true; });
+    b.textContent = b.dataset.outcome === 'paid' ? 'Autoryzuję…' : 'Odrzucam…';
+    state.store.simulate(ref, b.dataset.outcome, token).then(follow).catch((err) => {
+      toast(err.message, false);
+      box.querySelectorAll('button').forEach((x) => { x.disabled = false; });
+    });
+  }));
+  document.getElementById('gw-back')?.addEventListener('click', () => openOrder(p.number, token));
+}
+
+// ───────────── Strona zamówienia ─────────────
+
+function renderOrderPage() {
+  return `<div id="order-view"><p class="muted">Wczytuję zamówienie…</p></div>`;
+}
+
+const SHIP_PL = { paczkomat: 'Paczkomat InPost', kurier_inpost: 'Kurier InPost', odbior: 'Odbiór osobisty', brak: 'Bez wysyłki' };
+const PAY_PL = { stripe: 'BLIK / karta (Stripe)', przelewy24: 'Przelewy24', przelew: 'Przelew tradycyjny', pobranie: 'Za pobraniem', symulator: 'Bramka testowa' };
+const STEPS = ['czeka_na_platnosc', 'oplacone', 'akceptacja_projektu', 'w_realizacji', 'wyslane', 'dostarczone', 'zrealizowane'];
+
+function orderHeadline(o) {
+  if (o.status === 'anulowane') return ['Zamówienie anulowane', 'Nie otrzymaliśmy płatności w terminie, więc zwolniliśmy zarezerwowany towar.'];
+  if (o.status === 'czeka_na_platnosc') {
+    if (o.payment_method === 'przelew') return ['Czekamy na przelew', 'Towar jest zarezerwowany przez 3 dni. Wyślemy go po zaksięgowaniu wpłaty.'];
+    if (o.payment?.status === 'odrzucona') return ['Płatność nie przeszła', 'Zamówienie czeka. Możesz spróbować zapłacić jeszcze raz — towar trzymamy do końca rezerwacji.'];
+    return ['Czekamy na potwierdzenie płatności', 'Zwykle trwa to kilka sekund. Strona odświeży się sama.'];
+  }
+  if (o.status === 'akceptacja_projektu') return ['Dziękujemy, zamówienie opłacone', 'Grafik przygotuje podgląd z Twoim logo i wyśle go mailem do akceptacji. Druk ruszy po Twoim „tak”.'];
+  if (o.status === 'zrealizowane') return ['Dziękujemy, wszystko gotowe', 'Pliki do pobrania i kody są poniżej. Wysłaliśmy je też mailem.'];
+  if (o.payment_method === 'pobranie') return ['Dziękujemy, przyjęliśmy zamówienie', 'Zapłacisz kurierowi przy odbiorze.'];
+  return ['Dziękujemy, zamówienie opłacone', 'Przekazaliśmy je do realizacji. Numer przesyłki wyślemy mailem.'];
+}
+
+async function bindOrderPage() {
+  const box = document.getElementById('order-view');
+  const number = urlParam('zamowienie') ?? state.orderRef;
+  const token = urlParam('t');
+  if (!number) { box.innerHTML = '<div class="empty"><p class="muted">Brak numeru zamówienia.</p><a class="btn" href="#konto">Moje konto</a></div>'; return; }
+
+  let o;
+  try { o = await state.store.getOrder(number, token); } catch (err) {
+    box.innerHTML = `<div class="empty"><h1 class="h2">Nie znaleziono zamówienia</h1><p class="muted">${esc(err.message)}</p><a class="btn" href="#konto">Zaloguj się</a></div>`;
+    return;
+  }
+  const [title, lead] = orderHeadline(o);
+  const reached = new Set(o.events.map((e) => e.status));
+  const path = STEPS.filter((st) => reached.has(st) || (st !== 'akceptacja_projektu' && st !== 'oplacone') || (st === 'oplacone' && o.payment_method !== 'pobranie'))
+    .filter((st) => !(st === 'akceptacja_projektu' && !o.items.some((i) => i.project_status)))
+    .filter((st) => !(['wyslane', 'dostarczone'].includes(st) && o.shipping_method === 'brak'));
+  const current = path.indexOf(o.status);
+  const addr = o.shipping;
+
+  box.innerHTML = `
+  <div class="page-head">
+    <div class="crumbs"><a href="#start">Start</a><span>/</span><span>Zamówienie ${esc(o.number)}</span></div>
+    <p class="eyebrow">Zamówienie ${esc(o.number)} · ${new Date(o.created_at).toLocaleString('pl-PL', { dateStyle: 'long', timeStyle: 'short' })}</p>
+    <h1 class="h2">${esc(title)}</h1>
+    <p class="lead">${esc(lead)}</p>
+  </div>
+  ${o.status !== 'anulowane' ? `<ol class="track" aria-label="Postęp zamówienia">${path.map((st, i) => `<li data-state="${i < current ? 'done' : i === current ? 'now' : 'todo'}"><span>${esc(STATUS_PL[st])}</span></li>`).join('')}</ol>` : ''}
+
+  <div class="order-grid">
+    <div class="order-main">
+      ${o.can_pay ? `<div class="callout"><div><p class="h3">Zapłać ${zl(o.totals.total_gr)}</p><p class="small">${o.reserved_until ? `Rezerwacja do ${new Date(o.reserved_until).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}.` : ''}</p></div><button class="btn btn-primary" type="button" id="pay-again">Przejdź do płatności</button></div>` : ''}
+      ${o.bank_transfer ? `<div class="callout transfer">
+        <p class="h3">Dane do przelewu</p>
+        <table class="spec"><tbody>
+          <tr><th>Odbiorca</th><td>${esc(o.bank_transfer.recipient)}</td></tr>
+          <tr><th>Numer konta</th><td>${esc(o.bank_transfer.account)} <button type="button" class="link-btn" data-copy="${esc(o.bank_transfer.account.replace(/\s/g, ''))}">Kopiuj</button></td></tr>
+          <tr><th>Tytuł</th><td>${esc(o.bank_transfer.title)} <button type="button" class="link-btn" data-copy="${esc(o.bank_transfer.title)}">Kopiuj</button></td></tr>
+          <tr><th>Kwota</th><td>${zl(o.bank_transfer.amount_gr)}</td></tr>
+        </tbody></table>
+        ${o.bank_transfer.demo ? '<p class="small">Numer konta jest przykładowy — sklep jest demonstracyjny, nie wpłacaj pieniędzy.</p>' : ''}
+      </div>` : ''}
+      ${o.downloads.length ? `<section><h2 class="h3">Do pobrania</h2><ul class="plain dl-list">${o.downloads.map((d) => `<li>
+        ${d.url ? `<a class="btn" href="${esc(d.url)}">Pobierz: ${esc(d.name)}</a>` : `<span class="btn" aria-disabled="true">${esc(d.name)}</span>`}
+        <span class="small">${d.url ? `Zostało ${d.left} pobrań, link ważny do ${new Date(d.expires_at).toLocaleDateString('pl-PL')}.` : 'W podglądzie bez serwera pliki nie są generowane.'}</span></li>`).join('')}</ul></section>` : ''}
+      ${o.gift_cards.length ? `<section><h2 class="h3">Karty podarunkowe</h2><ul class="plain">${o.gift_cards.map((g) => `<li class="gift"><span class="mono">${esc(g.code)}</span><span>${zl(g.balance_gr)}</span><span class="small">ważna do ${new Date(g.valid_until).toLocaleDateString('pl-PL')}</span></li>`).join('')}</ul></section>` : ''}
+
+      <section>
+        <h2 class="h3">Produkty</h2>
+        <table class="spec order-items"><tbody>
+          ${o.items.map((i) => `<tr><th scope="row">${esc(i.name)}<br><span class="small mono">${esc(i.variant_label)} · ${esc(i.sku)}${i.project_status ? ` · ${i.has_file ? 'plik dołączony' : 'plik do dosłania'}` : ''}</span></th><td>${i.qty} × ${zl(i.unit_price_gr)}</td><td class="num">${zl(i.line_total_gr)}</td></tr>`).join('')}
+        </tbody></table>
+        <dl class="order-totals">
+          <dt>Produkty</dt><dd>${zl(o.totals.subtotal_gr)}</dd>
+          ${o.totals.discount_gr ? `<dt>Rabat ${esc(o.totals.coupon_code ?? '')}</dt><dd>−${zl(o.totals.discount_gr)}</dd>` : ''}
+          ${o.shipping_method !== 'brak' ? `<dt>Dostawa</dt><dd>${o.totals.shipping_gr ? zl(o.totals.shipping_gr) : 'gratis'}</dd>` : ''}
+          <dt class="total">Razem</dt><dd class="total">${zl(o.totals.total_gr)}</dd>
+          <dt>w tym VAT</dt><dd>${zl(o.totals.vat_gr)}</dd>
+        </dl>
+      </section>
+    </div>
+
+    <aside class="order-side">
+      <div class="panel">
+        <div><p class="eyebrow">Dostawa</p><p>${esc(SHIP_PL[o.shipping_method] ?? o.shipping_method)}${o.locker_code ? ` · <span class="mono">${esc(o.locker_code)}</span>` : ''}</p>
+          ${addr ? `<p class="small">${esc(addr.name ?? '')}${addr.street ? `<br>${esc(addr.street)}, ${esc(addr.postcode)} ${esc(addr.city)}` : ''}</p>` : ''}</div>
+        <div><p class="eyebrow">Płatność</p><p>${esc(PAY_PL[o.payment_method] ?? o.payment_method)}</p>
+          ${o.payment ? `<p class="small">Status: ${esc({ utworzona: 'oczekuje', oplacona: 'opłacona', odrzucona: 'odrzucona', zwrocona: 'zwrócona' }[o.payment.status] ?? o.payment.status)}${o.payment.provider === 'symulator' ? ' · bramka testowa' : ''}</p>` : ''}</div>
+        ${o.billing ? `<div><p class="eyebrow">Faktura</p><p class="small">${esc(o.billing.company)}<br>NIP ${esc(o.billing.nip)}<br>${esc(o.billing.street)}, ${esc(o.billing.postcode)} ${esc(o.billing.city)}</p></div>` : ''}
+        <div><p class="eyebrow">Historia</p><ol class="plain history">${o.events.map((e) => `<li><span class="mono small">${new Date(e.at).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' })}</span> ${esc(e.label)}${e.note ? `<br><span class="small">${esc(e.note)}</span>` : ''}</li>`).join('')}</ol></div>
+      </div>
+      ${token && !state.customer ? '<p class="small">Zachowaj ten link — to Twój dostęp do zamówienia bez konta. Wysłaliśmy go też mailem (maile ruszą w Etapie 6).</p>' : ''}
+    </aside>
+  </div>`;
+
+  document.getElementById('pay-again')?.addEventListener('click', (e) =>
+    run(e.currentTarget, async () => follow(await state.store.retryPay(o.number, token))));
+  box.querySelectorAll('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); toast('Skopiowano.', false); } catch { toast(b.dataset.copy, false); }
+  }));
+
+  // czekamy na powiadomienie z bramki (po powrocie ze Stripe/P24 płatność dochodzi webhookiem)
+  if (o.status === 'czeka_na_platnosc' && o.payment?.status === 'utworzona' && o.can_pay && state.store.mode === 'api' && document.contains(box)) {
+    state.pollCount = (state.pollCount ?? 0) + 1;
+    if (state.pollCount <= 10) setTimeout(() => { if (location.hash === '#zamowienie') bindOrderPage(); }, 3000);
+  } else state.pollCount = 0;
+}
+
 // ───────────── Router ─────────────
 
 let toastTimer;
@@ -782,6 +1154,12 @@ function render() {
     html = renderAccount(); title = 'Konto — PromoKuźnia'; after = bindAccount;
   } else if (route === 'reset-hasla') {
     html = renderResetRequest(); title = 'Reset hasła — PromoKuźnia'; after = bindResetRequest;
+  } else if (route === 'kasa') {
+    html = renderCheckout(); title = 'Kasa — PromoKuźnia'; after = bindCheckout;
+  } else if (route === 'symulator-platnosci') {
+    html = renderSimulator(); title = 'Płatność testowa — PromoKuźnia'; after = bindSimulator;
+  } else if (route === 'zamowienie') {
+    html = renderOrderPage(); title = 'Zamówienie — PromoKuźnia'; after = bindOrderPage;
   } else if (route === 'nowe-haslo') {
     html = renderNewPassword(); title = 'Nowe hasło — PromoKuźnia'; after = bindNewPassword;
   }
