@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Panel — PromoKuźnia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@75..150,500..900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="admin">
+<header class="adm-header">
+  <div class="wrap adm-row">
+    <a class="brand" href="#pulpit" aria-label="Panel PromoKuźnia">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">Promo<b>Kuźnia</b></span>
+      <span class="adm-badge">Panel</span>
+    </a>
+    <nav class="adm-nav" id="adm-nav" aria-label="Sekcje panelu" hidden>
+      <a href="#pulpit" data-sec="pulpit">Pulpit</a>
+      <a href="#zamowienia" data-sec="zamowienia">Zamówienia</a>
+      <a href="#produkty" data-sec="produkty">Produkty</a>
+    </nav>
+    <div class="adm-user" id="adm-user"></div>
+  </div>
+</header>
+
+<main id="adm" class="wrap" tabindex="-1"><p class="muted">Ładuję panel…</p></main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<script src="/admin/admin.js" type="module"></script>
+</body>
+</html>

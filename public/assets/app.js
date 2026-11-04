@@ -615,6 +615,7 @@ function renderAccount() {
       <p class="eyebrow">Zalogowano jako</p>
       <p class="h3">${esc(c.first_name ?? c.email)}</p>
       <p class="small mono">${esc(c.email)}</p>
+      ${c.is_admin ? '<a class="btn btn-primary" href="/admin/">Panel sklepu</a>' : ''}
       <button class="btn" type="button" id="logout-btn">Wyloguj się</button>
     </section>
     <section>
@@ -648,7 +649,8 @@ async function submitForm(form, fn) {
 }
 
 async function afterAuth(customer, message) {
-  setCustomer(customer);
+  // /api/auth/me zwraca też uprawnienia (np. dostęp do panelu)
+  setCustomer((await state.store.me().catch(() => null)) ?? customer);
   setCart(await state.store.getCart());
   toast(message, false);
   render();

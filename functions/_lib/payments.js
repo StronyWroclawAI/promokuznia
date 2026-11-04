@@ -141,6 +141,23 @@ async function stripeCreateSession(env, order, attempt, returnUrl) {
   return data;
 }
 
+// Zwrot przez Stripe (pełny albo częściowy). Klucz idempotencji chroni przed podwójnym zwrotem przy powtórzonym kliknięciu.
+export async function stripeRefund(env, paymentIntent, amountGr, idempotencyKey) {
+  const p = new URLSearchParams({ payment_intent: paymentIntent, amount: String(amountGr), reason: 'requested_by_customer' });
+  const res = await fetch('https://api.stripe.com/v1/refunds', {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${env.STRIPE_SECRET_KEY}`,
+      'content-type': 'application/x-www-form-urlencoded',
+      'idempotency-key': idempotencyKey
+    },
+    body: p
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Stripe: ${data?.error?.message ?? res.status}`);
+  return data;
+}
+
 // Nagłówek Stripe-Signature: t=<czas>,v1=<hmac>[,v1=...]. Podpisany tekst to `${t}.${surowe ciało}`.
 export async function verifyStripeSignature(rawBody, header, secret, toleranceSec = 300) {
   if (!header || !secret) return false;

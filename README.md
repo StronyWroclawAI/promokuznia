@@ -14,7 +14,7 @@ Stack: **Cloudflare Pages + Pages Functions + D1** (później KV, R2, Cron), fro
 | 3 | Koszyk w D1, konto klienta, upload plików do R2, kody rabatowe | gotowe |
 | 4 | Kasa, zamówienia, Stripe + Przelewy24 + bramka testowa, przelew, pobranie, webhooki | gotowe |
 | 5 | InPost ShipX + Geowidget, Furgonetka | — |
-| 6 | Panel admina, maile (Resend), faktury (Fakturownia) | — |
+| 6 | Panel admina, maile (Resend), faktury (Fakturownia) | panel admina gotowy; maile i faktury — dalej |
 | 7 | Regulamin, RODO, Omnibus, testy | Omnibus już liczony |
 | 8 | Domena, tryb demo, karta portfolio | — |
 
@@ -70,12 +70,15 @@ functions/              API (Pages Functions)
   api/webhooks/przelewy24.js  powiadomienia P24 (podpis SHA-384 + transaction/verify)
   api/payments/simulate.js    bramka testowa w trybie demo, gdy brak kluczy
   api/downloads/[token].js    produkty cyfrowe: link ważny 7 dni, 5 pobrań
+  api/admin/…                 panel: summary, orders, orders/:id (akcje), products, variants/:id, uploads/:id
+  _lib/admin.js               uprawnienia (ADMIN_EMAILS), przejścia statusów, zwroty
   _lib/orders.js              zamówienie z koszyka w jednej transakcji, finalizacja, wygaszanie rezerwacji
   _lib/payments.js            Stripe Checkout, Przelewy24 REST, wspólne oznaczanie płatności
   api/uploads/…               POST /api/uploads (R2), GET/DELETE /api/uploads/:id (tylko właściciel)
   _lib/catalog.js             zapytania D1, Omnibus (najniższa cena z 30 dni)
   _lib/cart.js                koszyk gościa (ciasteczko) i klienta, łączenie po zalogowaniu
   _lib/crypto.js              PBKDF2 100 000 iteracji, tokeny, SHA-256
+public/admin/                 panel admina: index.html, admin.js, admin.css (pod adresem /admin/)
 public/assets/pricing.js      wyliczanie sum koszyka — wspólne dla frontu i API
 public/assets/store.js        koszyk i konto: przez API albo lokalnie w podglądzie
 migrations/0001_init.sql      pełny schemat: katalog, klienci, koszyk, zamówienia,
@@ -139,3 +142,16 @@ Gość widzi zamówienie przez link z tokenem (`?zamowienie=…&t=…`), zalogow
 3. Powiadomienia przychodzą na `/api/webhooks/przelewy24` — adres podawany automatycznie przy rejestracji transakcji (sandbox musi widzieć sklep z internetu, więc testuj na wdrożonej wersji lub przez tunel `cloudflared`).
 
 Bez kluczy, przy `SHOP_MODE = "demo"`, obie metody przechodzą przez **bramkę testową** w sklepie (`#symulator-platnosci`), która wywołuje tę samą logikę co prawdziwe powiadomienie.
+
+## Panel admina (Etap 6)
+
+Adres: `/admin/`. Logujesz się zwykłym kontem sklepu; dostęp mają e-maile z sekretu `ADMIN_EMAILS`
+(Cloudflare → Settings → Variables and Secrets, kilka adresów po przecinku; lokalnie w `.dev.vars`).
+
+- **Pulpit** — sprzedaż dziś / 7 / 30 dni, średni koszyk, wykres 14 dni, lista „do zrobienia”, kończące się stany.
+- **Zamówienia** — filtry (przelewy do potwierdzenia, projekty do akceptacji, do wysłania…), wyszukiwanie po numerze, e-mailu, nazwisku i firmie.
+- **Szczegóły** — pliki klienta do pobrania, płatności z każdą próbą, pełna historia z autorem zmiany (klient, płatność, sklep, automat) i przyciski tylko dla akcji dozwolonych w danym stanie:
+  potwierdź przelew → projekt zaakceptowany / do poprawy → wysłane (numer przesyłki) → doręczone → zakończone; anulowanie; zwrot pełny lub częściowy (Stripe automatycznie, P24/przelew/pobranie — zapis do ręcznego zwrotu) z opcją oddania towaru na stan; notatki.
+- **Produkty** — cena (każda zmiana trafia do historii cen pod Omnibus), stan magazynowy (nie niżej niż rezerwacje), włączanie wariantów i ukrywanie produktów.
+
+Każda zmiana statusu ma warunek w zapytaniu (`UPDATE … WHERE status = <poprzedni>`), więc dwa kliknięcia albo dwóch adminów naraz nie przestawią zamówienia dwa razy.
