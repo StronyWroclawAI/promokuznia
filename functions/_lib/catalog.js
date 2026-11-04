@@ -1,6 +1,8 @@
 // Odczyt katalogu z D1 i zamiana wierszy na obiekty API.
 // Kształt odpowiedzi jest identyczny z public/data/catalog.json (tryb bez API).
 
+import { openPromotions } from './promotions.js';
+
 const DAY = 86400000;
 
 const parse = (s, fallback) => {
@@ -10,8 +12,24 @@ const parse = (s, fallback) => {
 // Zdjęcie z R2 ma src = /api/images/<klucz>; zdjęcie z zewnątrz — pełny adres URL
 export const imageView = (im) => ({ id: im.id, src: im.src || `/api/images/${im.r2_key}`, alt: im.alt });
 
-export function toProduct(row, variants, lowest30, images = []) {
+// promo: trwająca promocja produktu (z promotions.js) — warianty dostają cenę sprzed promocji i najniższą z 30 dni
+export function toProduct(row, variants, lowest30, images = [], promo = null, historyByVariant = null) {
   const dims = row.length_cm ? [row.length_cm, row.width_cm, row.height_cm] : null;
+  const vs = variants.map((v) => {
+    const before = promo?.base?.[v.id] ?? (row.compare_at_gr && row.compare_at_gr > v.price_gr && variants.length === 1 ? row.compare_at_gr : null);
+    const compare = before && before > v.price_gr ? before : null;
+    return {
+      id: v.id,
+      sku: v.sku,
+      label: v.label,
+      price_gr: v.price_gr,
+      compare_at_gr: compare,
+      lowest_30d_gr: compare && historyByVariant ? lowestBeforeReduction(historyByVariant.get(v.id) ?? []) : null,
+      stock: v.stock === null ? null : v.stock - v.reserved,
+      available: v.stock === null || v.stock - v.reserved > 0
+    };
+  });
+  const cheapest = vs.length ? vs.reduce((a, b) => (b.price_gr < a.price_gr ? b : a)) : null;
   return {
     id: row.id,
     slug: row.slug,
@@ -31,20 +49,21 @@ export function toProduct(row, variants, lowest30, images = []) {
     images: images.map(imageView),
     specs: parse(row.specs_json, []),
     badges: parse(row.badges_json, []),
-    compare_at_gr: row.compare_at_gr,
-    lowest_30d_gr: lowest30 ?? null,
+    // cena „przed obniżką” najtańszego wariantu — do karty produktu w liście
+    compare_at_gr: cheapest?.compare_at_gr ?? (row.compare_at_gr && cheapest && row.compare_at_gr > cheapest.price_gr ? row.compare_at_gr : null),
+    lowest_30d_gr: cheapest?.lowest_30d_gr ?? lowest30 ?? null,
+    promo: promo ? { percent: promo.percent, label: promo.label, ends_at: promo.ends_at } : null,
     gpsr: parse(row.gpsr_json, null),
-    variants: variants.map((v) => ({
-      id: v.id,
-      sku: v.sku,
-      label: v.label,
-      price_gr: v.price_gr,
-      stock: v.stock === null ? null : v.stock - v.reserved,
-      available: v.stock === null || v.stock - v.reserved > 0
-    })),
-    price_from_gr: variants.length ? Math.min(...variants.map((v) => v.price_gr)) : null
+    variants: vs,
+    price_from_gr: cheapest?.price_gr ?? null
   };
 }
+
+const groupHistory = (rows) => {
+  const m = new Map();
+  for (const h of rows) { if (!m.has(h.variant_id)) m.set(h.variant_id, []); m.get(h.variant_id).push(h); }
+  return m;
+};
 
 // Dyrektywa Omnibus: najniższa cena z 30 dni przed ostatnią obniżką
 export function lowestBeforeReduction(history) {
@@ -64,13 +83,14 @@ export function lowestBeforeReduction(history) {
 
 const PRODUCT_COLUMNS = `p.*, c.slug AS category_slug`;
 
-export async function listCategories(db) {
+// Sklep pokazuje tylko kategorie z produktami; panel (all = true) — wszystkie
+export async function listCategories(db, { all = false } = {}) {
   const { results } = await db.prepare(
     `SELECT c.id, c.slug, c.name, c.lead, c.sort,
             (SELECT COUNT(*) FROM products p WHERE p.category_id = c.id AND p.active = 1) AS product_count
        FROM categories c ORDER BY c.sort`
   ).all();
-  return results;
+  return all ? results : results.filter((c) => c.product_count > 0);
 }
 
 const SORTS = {
@@ -108,19 +128,26 @@ export async function listProducts(db, { category, q, type, sort = 'polecane', l
   const [{ results: variants }, { results: history }, { results: images }] = await db.batch([
     db.prepare(`SELECT * FROM variants WHERE active = 1 AND product_id IN (${marks}) ORDER BY product_id, sort`).bind(...idBinds),
     db.prepare(
-      `SELECT v.product_id, h.price_gr, h.valid_from
+      `SELECT v.product_id, h.variant_id, h.price_gr, h.valid_from
          FROM price_history h JOIN variants v ON v.id = h.variant_id
-        WHERE v.product_id IN (${marks}) AND v.sort = 0`
+        WHERE v.product_id IN (${marks})`
     ).bind(...idBinds),
     db.prepare(`SELECT * FROM product_images WHERE product_id IN (${marks}) ORDER BY product_id, sort, id`).bind(...idBinds)
   ]);
 
-  return rows.map((row) => toProduct(
-    row,
-    variants.filter((v) => v.product_id === row.id),
-    row.compare_at_gr ? lowestBeforeReduction(history.filter((h) => h.product_id === row.id)) : null,
-    images.filter((im) => im.product_id === row.id)
-  ));
+  const promos = await openPromotions(db);
+  const byVariant = groupHistory(history);
+  return rows.map((row) => {
+    const own = variants.filter((v) => v.product_id === row.id);
+    const first = own[0];
+    return toProduct(
+      row, own,
+      row.compare_at_gr && first ? lowestBeforeReduction(byVariant.get(first.id) ?? []) : null,
+      images.filter((im) => im.product_id === row.id),
+      promos.get(row.id) ?? null,
+      byVariant
+    );
+  });
 }
 
 export async function getProduct(db, slug) {
@@ -132,10 +159,13 @@ export async function getProduct(db, slug) {
   const [{ results: variants }, { results: history }, { results: images }] = await db.batch([
     db.prepare('SELECT * FROM variants WHERE product_id = ? AND active = 1 ORDER BY sort').bind(row.id),
     db.prepare(
-      `SELECT h.price_gr, h.valid_from FROM price_history h JOIN variants v ON v.id = h.variant_id
-        WHERE v.product_id = ? AND v.sort = 0`
+      `SELECT h.variant_id, h.price_gr, h.valid_from FROM price_history h JOIN variants v ON v.id = h.variant_id
+        WHERE v.product_id = ?`
     ).bind(row.id),
     db.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort, id').bind(row.id)
   ]);
-  return toProduct(row, variants, row.compare_at_gr ? lowestBeforeReduction(history) : null, images);
+  const promos = await openPromotions(db);
+  const byVariant = groupHistory(history);
+  return toProduct(row, variants, row.compare_at_gr && variants[0] ? lowestBeforeReduction(byVariant.get(variants[0].id) ?? []) : null,
+    images, promos.get(row.id) ?? null, byVariant);
 }

@@ -18,6 +18,7 @@ const SOURCE = { klient: 'klient', webhook_platnosci: 'płatność', webhook_prz
 const PROJECT = { czeka: 'czeka na akceptację', zaakceptowany: 'zaakceptowany', do_poprawy: 'do poprawy' };
 
 import { initProducts, viewProducts, viewProductEdit, viewImport } from './products.js';
+import { initPromos, viewPromos } from './promos.js';
 
 let labels = {};
 let toastTimer;
@@ -307,6 +308,7 @@ async function render() {
     else if (route === 'produkt-nowy') await viewProductEdit(null);
     else if (route.startsWith('produkt-')) await viewProductEdit(Number(route.slice(8)));
     else if (route === 'import') await viewImport();
+    else if (route === 'promocje') await viewPromos();
     else location.hash = 'pulpit';
   } catch (err) {
     if (err.status === 401 || err.status === 403) return start();
@@ -334,6 +336,7 @@ async function start() {
 }
 
 initProducts({ main, api, toast, esc, zl });
+initPromos({ main, api, toast, esc, zl });
 window.addEventListener('hashchange', () => { render(); window.scrollTo({ top: 0 }); });
 toastEl.addEventListener('click', () => { toastEl.hidden = true; });
 start();

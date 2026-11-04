@@ -40,125 +40,11 @@ function typeTag(p) {
   return TYPE_TAG[p.type];
 }
 
-// ───────────── Ilustracje produktów (zastępują zdjęcia do czasu uploadu do R2) ─────────────
-
-const TONE = { magenta: 'var(--c-m)', cyan: 'var(--c-c)', yellow: 'var(--c-y)', ink: 'var(--ink)' };
-const K = 'stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"';
-const S = 'var(--sheet)';
-const lines = (x, y, w, n, gap = 14) =>
-  Array.from({ length: n }, (_, i) => `<line x1="${x}" y1="${y + i * gap}" x2="${x + (i === n - 1 ? w * 0.6 : w)}" y2="${y + i * gap}" stroke="var(--line)" stroke-width="5" stroke-linecap="round"/>`).join('');
-
-const SHAPES = {
-  card: (t) => `
-    <g transform="rotate(-9 200 150)"><rect x="92" y="98" width="200" height="124" rx="4" fill="${S}" ${K}/></g>
-    <g transform="rotate(5 200 150)"><rect x="106" y="80" width="200" height="124" rx="4" fill="${S}" ${K}/>
-      <rect x="107.5" y="81.5" width="62" height="121" fill="${t}"/>${lines(186, 120, 96, 3)}
-      <rect x="186" y="168" width="40" height="8" fill="${t}"/></g>`,
-  flyer: (t) => `
-    <g transform="rotate(-7 200 150)"><rect x="118" y="46" width="132" height="190" fill="${S}" ${K}/></g>
-    <g transform="rotate(4 200 150)"><rect x="150" y="40" width="132" height="190" fill="${S}" ${K}/>
-      <rect x="151.5" y="41.5" width="129" height="88" fill="${t}"/>${lines(166, 150, 100, 4)}</g>`,
-  letter: (t) => `
-    <rect x="128" y="26" width="150" height="214" fill="${S}" ${K}/>
-    <rect x="144" y="44" width="26" height="26" fill="${t}"/>${lines(144, 98, 118, 6, 16)}
-    <line x1="144" y1="222" x2="262" y2="222" stroke="${t}" stroke-width="4"/>`,
-  folder: (t) => `
-    <g transform="rotate(-6 200 150)"><rect x="96" y="52" width="190" height="196" fill="${S}" ${K}/></g>
-    <rect x="114" y="46" width="190" height="200" fill="${t}" ${K}/>
-    <path d="M114 176 L304 154 L304 246 L114 246 Z" fill="${S}" ${K}/>
-    <rect x="240" y="176" width="44" height="26" fill="none" ${K}/>`,
-  sticker: (t) => `
-    <circle cx="200" cy="150" r="88" fill="${t}" ${K}/>
-    <path d="M200 150 m-38 0 l26 -30 l12 18 l14 -22 l24 34 z" fill="${S}"/>
-    <path d="M262 212 Q246 222 240 238 Q262 236 274 224 Z" fill="${S}" ${K}/>`,
-  mug: (t) => `
-    <path d="M254 112 h12 a36 36 0 0 1 0 72 h-12" fill="none" stroke="var(--ink)" stroke-width="14" stroke-linecap="round"/>
-    <path d="M254 112 h12 a36 36 0 0 1 0 72 h-12" fill="none" stroke="${S}" stroke-width="8" stroke-linecap="round"/>
-    <rect x="138" y="84" width="118" height="140" rx="10" fill="${S}" ${K}/>
-    <rect x="139.5" y="118" width="115" height="54" fill="${t}"/>
-    <path d="M176 66 q-8 -12 0 -24 M200 66 q-8 -12 0 -24 M224 66 q-8 -12 0 -24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round"/>`,
-  thermo: (t) => `
-    <rect x="160" y="44" width="80" height="26" rx="6" fill="var(--ink)"/>
-    <rect x="166" y="66" width="68" height="192" rx="12" fill="${t}" ${K}/>
-    <rect x="182" y="130" width="36" height="36" rx="4" fill="none" stroke="${S}" stroke-width="3"/>`,
-  pen: (t) => `
-    <g transform="rotate(-28 200 150)">
-      <rect x="66" y="136" width="240" height="28" rx="14" fill="${t}" ${K}/>
-      <path d="M306 140 L344 150 L306 160 Z" fill="${S}" ${K}/>
-      <rect x="96" y="124" width="70" height="10" rx="5" fill="${S}" ${K}/>
-      <line x1="200" y1="150" x2="270" y2="150" stroke="${S}" stroke-width="3"/></g>`,
-  lanyard: (t) => `
-    <path d="M118 26 L188 196 M282 26 L212 196" stroke="${t}" stroke-width="18" stroke-linecap="round"/>
-    <rect x="188" y="186" width="24" height="20" fill="var(--muted)"/>
-    <rect x="152" y="204" width="96" height="70" rx="6" fill="${S}" ${K}/>${lines(168, 228, 64, 3)}`,
-  tote: (t) => `
-    <path d="M162 118 C162 40 238 40 238 118" fill="none" stroke="var(--ink)" stroke-width="7"/>
-    <rect x="116" y="112" width="168" height="160" fill="${S}" ${K}/>
-    <circle cx="200" cy="188" r="38" fill="${t}"/>`,
-  tshirt: (t) => `
-    <path d="M140 58 L172 46 Q200 70 228 46 L260 58 L304 102 L272 130 L260 118 L260 256 L140 256 L140 118 L128 130 L96 102 Z" fill="${t}" ${K}/>
-    <rect x="214" y="98" width="28" height="22" fill="${S}"/>`,
-  notebook: (t) => `
-    <rect x="132" y="44" width="152" height="212" rx="6" fill="${t}" ${K}/>
-    <rect x="133.5" y="45.5" width="16" height="209" fill="var(--ink)" opacity=".25"/>
-    <rect x="172" y="96" width="84" height="44" fill="${S}"/>`,
-  rollup: (t) => `
-    <rect x="146" y="24" width="108" height="228" fill="${S}" ${K}/>
-    <rect x="147.5" y="56" width="105" height="86" fill="${t}"/>${lines(162, 166, 76, 4)}
-    <rect x="132" y="248" width="136" height="18" rx="4" fill="var(--ink)"/>`,
-  wall: (t) => `
-    <path d="M66 64 Q200 44 334 64 L334 236 Q200 216 66 236 Z" fill="${t}" ${K}/>
-    <path d="M110 120 Q200 108 290 120" stroke="${S}" stroke-width="10" fill="none" stroke-linecap="round"/>
-    <path d="M140 150 Q200 142 260 150" stroke="${S}" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <path d="M90 238 l-14 24 M310 238 l14 24" ${K}/>`,
-  flag: (t) => `
-    <line x1="164" y1="28" x2="164" y2="262" stroke="var(--ink)" stroke-width="4"/>
-    <path d="M166 34 C262 44 266 150 236 250 L166 250 Z" fill="${t}" ${K}/>
-    <path d="M130 270 L198 270 M164 262 L140 280 M164 262 L188 280" ${K}/>`,
-  grid: (t) => `
-    <rect x="138" y="22" width="124" height="256" rx="18" fill="${S}" ${K}/>
-    ${[0, 1, 2].flatMap((r) => [0, 1, 2].map((c) => `<rect x="${152 + c * 34}" y="${62 + r * 34}" width="30" height="30" fill="${(r + c) % 2 ? 'var(--line)' : t}"/>`)).join('')}
-    ${lines(152, 186, 96, 3)}`,
-  doc: (t) => `
-    <path d="M132 26 H248 L278 56 V264 H132 Z" fill="${S}" ${K}/>
-    <path d="M248 26 V56 H278" fill="none" ${K}/>
-    <rect x="148" y="72" width="70" height="12" fill="${t}"/>${lines(148, 108, 112, 4)}
-    <rect x="148" y="184" width="34" height="56" fill="${t}" opacity=".35"/><rect x="188" y="168" width="34" height="72" fill="${t}"/><rect x="228" y="200" width="34" height="40" fill="${t}" opacity=".6"/>`,
-  book: (t) => `
-    <path d="M200 70 Q150 52 86 64 V240 Q150 228 200 246 Z" fill="${S}" ${K}/>
-    <path d="M200 70 Q250 52 314 64 V240 Q250 228 200 246 Z" fill="${S}" ${K}/>
-    <rect x="104" y="92" width="28" height="28" fill="var(--c-c)"/><rect x="138" y="92" width="28" height="28" fill="var(--c-m)"/><rect x="104" y="126" width="28" height="28" fill="var(--c-y)"/><rect x="138" y="126" width="28" height="28" fill="var(--ink)"/>
-    <circle cx="256" cy="120" r="30" fill="${t}"/>${lines(222, 184, 70, 2)}`,
-  calendar: (t) => `
-    <rect x="108" y="58" width="184" height="180" rx="6" fill="${S}" ${K}/>
-    <rect x="109.5" y="59.5" width="181" height="36" fill="${t}"/>
-    <path d="M150 46 v26 M250 46 v26" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
-    ${Array.from({ length: 20 }, (_, i) => `<rect x="${124 + (i % 5) * 32}" y="${110 + Math.floor(i / 5) * 30}" width="20" height="18" rx="2" fill="${i === 12 ? t : 'var(--line)'}"/>`).join('')}`,
-  pin: (t) => `
-    <path d="M60 220 L150 180 L250 214 L340 170" fill="none" stroke="var(--line)" stroke-width="10" stroke-linecap="round"/>
-    <path d="M100 120 L190 150 L310 110" fill="none" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/>
-    <path d="M200 238 C176 200 146 174 146 136 a54 54 0 0 1 108 0 C254 174 224 200 200 238 Z" fill="${t}" ${K}/>
-    <circle cx="200" cy="136" r="20" fill="${S}" ${K}/>`,
-  pentool: (t) => `
-    <path d="M80 240 C120 120 280 220 320 70" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="6 6"/>
-    <rect x="72" y="232" width="16" height="16" fill="${S}" ${K}/><rect x="312" y="62" width="16" height="16" fill="${S}" ${K}/>
-    <path d="M200 44 L246 136 L216 236 L184 236 L154 136 Z" fill="${t}" ${K}/>
-    <line x1="200" y1="44" x2="200" y2="120" stroke="${S}" stroke-width="3"/>
-    <circle cx="200" cy="132" r="10" fill="${S}" ${K}/>`,
-  gift: (t) => `
-    <g transform="rotate(-6 200 150)"><rect x="94" y="78" width="212" height="134" rx="8" fill="${S}" ${K}/>
-      <rect x="182" y="79.5" width="22" height="131" fill="${t}"/><rect x="95.5" y="134" width="209" height="20" fill="${t}"/>
-      <path d="M193 134 C170 104 150 118 168 134 Z M193 134 C216 104 236 118 218 134 Z" fill="${t}" ${K}/>
-      <text x="290" y="200" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="16" fill="var(--muted)">PLN</text></g>`
-};
-
-function art(p, size = 'card') {
-  const t = TONE[p.art?.tone] ?? TONE.magenta;
-  const shape = SHAPES[p.art?.shape] ?? SHAPES.card;
-  return `<svg viewBox="0 0 400 300" role="img" aria-label="${esc(p.name)} — ilustracja produktu" preserveAspectRatio="xMidYMid meet">
-    <rect width="400" height="300" fill="${t}" opacity="${size === 'hero' ? 0.1 : 0.08}"/>${shape(t)}</svg>`;
+// ───────────── Zastępstwo za zdjęcie ─────────────
+// Gdy produkt nie ma zdjęcia albo się nie wczyta: spokojne tło w kolorach marki z nazwą produktu.
+function art(p) {
+  return `<span class="ph-fallback" data-tone="${esc(p.art?.tone ?? 'ink')}"><span class="ph-fallback-name">${esc(p.name)}</span></span>`;
 }
-
 
 // ───────────── Zdjęcia produktów ─────────────
 // Zdjęcie z katalogu (R2 albo URL); gdy się nie wczyta — ilustracja SVG w tym samym miejscu.
@@ -178,9 +64,20 @@ function media(p, { i = 0, hover = false, sizes, eager = false, vt = '' } = {}) 
   const im = list[i];
   const style = vt ? ` style="view-transition-name:${vt}"` : '';
   if (!im) return `<div class="ph is-art"${style}>${art(p)}</div>`;
-  const second = hover && list[i + 1] ? imgTag(list[i + 1], p, { sizes, cls: 'alt' }).replace(/alt="[^"]*"/, 'alt=""') : '';
+  // drugie zdjęcie (podmiana po najechaniu) pobiera się dopiero przy pierwszym najechaniu kursorem
+  const second = hover && list[i + 1] ? imgTag(list[i + 1], p, { sizes, cls: 'alt' }).replace(/alt="[^"]*"/, 'alt=""').replace(/ (src|srcset)="/g, ' data-$1="') : '';
   return `<div class="ph"${style}>${imgTag(im, p, { sizes, eager })}${second}<span class="ph-art" aria-hidden="true">${art(p)}</span></div>`;
 }
+
+document.addEventListener('pointerover', (e) => {
+  const card = e.target.closest?.('.card');
+  if (!card) return;
+  card.querySelectorAll('img.alt[data-src]').forEach((img) => {
+    if (img.dataset.srcset) img.srcset = img.dataset.srcset;
+    img.src = img.dataset.src;
+    img.removeAttribute('data-src'); img.removeAttribute('data-srcset');
+  });
+}, { passive: true });
 
 // load/error nie bubblują — łapiemy je w fazie capture dla wszystkich zdjęć w sklepie
 document.addEventListener('load', (e) => {
@@ -296,22 +193,30 @@ const UPLOAD_ACCEPT = '.pdf,.png,.jpg,.jpeg,.svg,.ai,.eps';
 
 // ───────────── Widoki ─────────────
 
-const badgesHtml = (p) => (p.badges.length ? `<div class="badges">${p.badges.map((b) => `<span class="badge" data-kind="${esc(b)}">${esc(b)}</span>`).join('')}</div>` : '');
+const promoBadge = (p) => (p.promo ? `<span class="badge" data-kind="Promocja">−${p.promo.percent}%${p.promo.label ? ` · ${esc(p.promo.label)}` : ''}</span>` : '');
+const badgesHtml = (p) => {
+  const list = p.badges.filter((b) => !(p.promo && b === 'Promocja'));
+  return list.length || p.promo ? `<div class="badges">${promoBadge(p)}${list.map((b) => `<span class="badge" data-kind="${esc(b)}">${esc(b)}</span>`).join('')}</div>` : '';
+};
 const catName = (slug) => state.categories.find((c) => c.slug === slug)?.name ?? '';
 const ARROW = '<svg class="arr" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const until = (iso) => new Date(iso).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long' });
+// cena „przed obniżką” wariantu: z promocji (API) albo — w katalogu statycznym — z produktu
+const compareOf = (p, v) => v.compare_at_gr ?? (p.variants.length === 1 && p.compare_at_gr > v.price_gr ? p.compare_at_gr : null);
+const lowestOf = (p, v) => v.lowest_30d_gr ?? (compareOf(p, v) ? p.lowest_30d_gr : null);
 
 function productCard(p, i = 0) {
   const promo = p.compare_at_gr && p.compare_at_gr > p.price_from_gr;
   const multi = p.variants.length > 1;
   return `<a class="card" href="#p-${esc(p.slug)}" data-slug="${esc(p.slug)}" data-reveal style="--i:${i % 4}">
-    <div class="proof card-media">${badgesHtml(p)}${media(p, { hover: true, sizes: '(max-width: 600px) 46vw, (max-width: 1100px) 30vw, 280px' })}
+    <div class="proof card-media">${badgesHtml(p)}${media(p, { hover: true, sizes: '(max-width: 600px) 46vw, (max-width: 1100px) 30vw, 300px' })}
       <span class="card-cta">Zobacz produkt ${ARROW}</span></div>
     <div class="card-body">
       <span class="card-cat">${esc(catName(p.category))}</span>
       <span class="card-name">${esc(p.name)}</span>
       <p class="card-short">${esc(p.short)}</p>
       <div class="card-meta">
-        <span class="price">${multi ? '<span class="from">od </span>' : ''}${zl(p.price_from_gr)}${promo ? `<s>${zl(p.compare_at_gr)}</s>` : ''}</span>
+        <span class="price${promo ? ' is-promo' : ''}">${multi ? '<span class="from">od </span>' : ''}${zl(p.price_from_gr)}${promo ? `<s>${zl(p.compare_at_gr)}</s>` : ''}</span>
         <span class="tag">${esc(typeTag(p))}</span>
       </div>
     </div>
@@ -320,39 +225,61 @@ function productCard(p, i = 0) {
 
 const pick = (...slugs) => slugs.map((s) => state.bySlug[s]).filter(Boolean);
 const withImage = (list) => list.find((p) => imagesOf(p).length) ?? list[0];
+const promoProducts = () => state.products.filter((p) => p.promo || (p.compare_at_gr && p.compare_at_gr > p.price_from_gr));
+
+// Formaty plakatów w skali: A0 → A5, każdy kolejny to połowa poprzedniego
+const FORMATS = [['A0', 841, 1189], ['A1', 594, 841], ['A2', 420, 594], ['A3', 297, 420], ['A4', 210, 297], ['A5', 148, 210]];
+function formatsSection() {
+  const druk = state.bySlug['druk-plakatu'];
+  const proj = state.bySlug['projekt-plakatu'];
+  if (!druk && !proj) return '';
+  const priceFor = (prod, f) => prod?.variants.find((v) => v.label.startsWith(f));
+  return `<section class="section formats" aria-labelledby="h-fmt">
+    <div class="section-head" data-reveal><div><p class="eyebrow">02 — Plakaty</p><h2 class="h2" id="h-fmt">Sześć formatów, jeden standard jakości</h2></div>
+      <p class="lead formats-lead">Wymiary i ceny wszystkich formatów w jednym miejscu. Każdy kolejny format to dokładnie połowa poprzedniego.</p></div>
+    <div class="fmt-wrap" data-reveal>
+      <div class="fmt-stage" role="list">
+        ${FORMATS.map(([f, w, h], i) => `<a role="listitem" class="fmt fmt-${f}" href="#p-${druk ? 'druk-plakatu' : 'projekt-plakatu'}" data-f="${f}" style="--w:${(w / 841) * 100}%;--h:${(h / 1189) * 100}%;--i:${i}" aria-label="${f}: ${w} × ${h} mm"><span>${f}</span></a>`).join('')}
+      </div>
+      <dl class="fmt-table">
+        ${FORMATS.map(([f, w, h]) => {
+          const d = priceFor(druk, f), pr = priceFor(proj, f);
+          return `<div class="fmt-row" data-f="${f}"><dt><b>${f}</b><span class="mono">${w} × ${h} mm</span></dt>
+            <dd>${d ? `<span>druk <b class="mono">${zl(d.price_gr)}</b>/szt.</span>` : ''}${pr ? `<span>projekt <b class="mono">${zl(pr.price_gr)}</b></span>` : ''}</dd></div>`;
+        }).join('')}
+      </dl>
+    </div>
+  </section>`;
+}
 
 function renderHome() {
-  const best = state.products.filter((p) => p.badges.length).slice(0, 4);
-  const more = state.products.filter((p) => !p.badges.length && imagesOf(p).length).slice(0, 8 - best.length);
-  const shots = pick('wizytowki-standard', 'kubek-ceramiczny-z-logo', 'roll-up-85x200');
-  const hero = shots.length === 3 ? shots : state.products.slice(0, 3);
-  const counts = Object.fromEntries(state.categories.map((c) => [c.slug, state.products.filter((p) => p.category === c.slug)]));
-  const minDays = Math.min(...state.products.filter((p) => p.type === 'physical').map((p) => p.lead_time_days));
-  const words = ['Wizytówki', 'Roll-upy', 'Kubki z logo', 'Ulotki', 'Ścianki targowe', 'Torby z nadrukiem', 'Szablony do social mediów', 'Projekt logo', 'Naklejki', 'Beach flagi'];
-  const audiences = [
-    { title: 'Biura i firmy usługowe', text: 'Spójny komplet na pierwsze spotkanie: wizytówki, papier firmowy i teczka na ofertę.', img: pick('papier-firmowy-a4')[0], links: pick('wizytowki-standard', 'papier-firmowy-a4', 'teczki-ofertowe-a4') },
-    { title: 'Targi i eventy', text: 'Stoisko widoczne z końca hali — roll-up, ścianka tekstylna i flaga przed wejściem.', img: pick('scianka-tekstylna-3x225')[0], links: pick('roll-up-85x200', 'scianka-tekstylna-3x225', 'flaga-reklamowa-beach-flag') },
-    { title: 'Marki w social mediach', text: 'Gotowe szablony postów, kalendarz treści i audyt wizytówki Google na start.', img: pick('pakiet-30-postow-instagram')[0], links: pick('pakiet-30-postow-instagram', 'kalendarz-tresci-2027', 'audyt-profilu-google') }
-  ];
+  const cards = pick('wizytowki-standard', 'wizytowki-soft-touch');
+  const druk = state.bySlug['druk-plakatu'];
+  const shots = [state.bySlug['druk-plakatu'], ...cards, state.bySlug['projekt-plakatu'], ...state.products].filter(Boolean).filter((p, i, a) => a.indexOf(p) === i).slice(0, 3);
+  const minCard = Math.min(...state.products.filter((p) => p.category === 'wizytowki').map((p) => p.price_from_gr), Infinity);
+  const minDays = Math.min(...state.products.filter((p) => p.type === 'physical').map((p) => p.lead_time_days), 99);
+  const promos = promoProducts();
+  const words = ['Wizytówki 350 g', 'Soft-touch', 'Lakier UV', 'Plakaty A5', 'A4', 'A3', 'A2', 'A1', 'A0', 'Projekt graficzny', 'Podgląd przed drukiem', 'Wysyłka w tubie'];
   return `
+  ${promos.length ? `<a class="promo-strip" href="#promocje" data-reveal><span class="promo-dot"></span><b>Promocje:</b> ${promos.slice(0, 2).map((p) => `${esc(p.name)}${p.promo ? ` −${p.promo.percent}%${p.promo.ends_at ? ` do ${until(p.promo.ends_at)}` : ''}` : ''}`).join(' · ')} <span class="more">Zobacz ${ARROW}</span></a>` : ''}
   <section class="hero">
     <div class="hero-copy">
-      <p class="eyebrow hero-in" style="--d:0">Drukarnia i studio dla małych firm</p>
-      <h1 class="display"><span class="hero-in" style="--d:1">Wykuwamy markę,</span> <em class="hero-in" style="--d:2">którą widać.</em></h1>
-      <p class="lead hero-in" style="--d:3">Wizytówki, roll-upy, kubki z logo i gotowe szablony do social mediów. Wgrywasz plik albo zamawiasz projekt, akceptujesz podgląd, a my drukujemy i wysyłamy Paczkomatem.</p>
+      <p class="eyebrow hero-in" style="--d:0">Drukarnia i studio graficzne</p>
+      <h1 class="display"><span class="hero-in" style="--d:1">Wizytówki i plakaty,</span> <em class="hero-in" style="--d:2">które robią wrażenie.</em></h1>
+      <p class="lead hero-in" style="--d:3">Wizytówki od 100 sztuk i plakaty od A5 do A0. Wgrywasz plik albo zamawiasz projekt u grafika, akceptujesz podgląd, a my drukujemy i wysyłamy.</p>
       <div class="hero-actions hero-in" style="--d:4">
-        <a class="btn btn-primary btn-lg" href="#wszystkie">Zobacz asortyment ${ARROW}</a>
-        <a class="btn btn-lg" href="#kategoria-druk-firmowy">Druk firmowy</a>
+        <a class="btn btn-primary btn-lg" href="#kategoria-wizytowki">Zamów wizytówki ${ARROW}</a>
+        <a class="btn btn-lg" href="#kategoria-plakaty">Plakaty A5–A0</a>
       </div>
       <dl class="hero-stats hero-in" style="--d:5">
-        <div><dt>produktów</dt><dd data-count="${state.products.length}">${state.products.length}</dd></div>
-        <div><dt>kategorii</dt><dd data-count="${state.categories.length}">${state.categories.length}</dd></div>
+        ${Number.isFinite(minCard) ? `<div><dt>wizytówki, 100 szt.</dt><dd>od ${zl(minCard).replace(',00', '')}</dd></div>` : ''}
+        <div><dt>formatów plakatów</dt><dd data-count="6">6</dd></div>
         <div><dt>dni do wysyłki</dt><dd>od <span data-count="${minDays}">${minDays}</span></dd></div>
       </dl>
     </div>
     <div class="hero-stage" aria-label="Wybrane produkty">
-      ${hero.map((p, i) => `<a class="hero-shot shot-${i + 1} proof" href="#p-${esc(p.slug)}" data-slug="${esc(p.slug)}" style="--d:${i + 2}">
-        ${media(p, { sizes: i === 0 ? '(max-width: 900px) 80vw, 420px' : '(max-width: 900px) 45vw, 260px', eager: i === 0 })}
+      ${shots.map((p, i) => `<a class="hero-shot shot-${i + 1} proof" href="#p-${esc(p.slug)}" data-slug="${esc(p.slug)}" style="--d:${i + 2}">
+        ${media(p, { sizes: i === 0 ? '(max-width: 900px) 80vw, 440px' : '(max-width: 900px) 45vw, 270px', eager: i === 0 })}
         <span class="shot-label"><b>${esc(p.name)}</b><span>od ${zl(p.price_from_gr)}</span></span></a>`).join('')}
       <span class="reg-mark" aria-hidden="true"></span>
     </div>
@@ -363,61 +290,67 @@ function renderHome() {
   </div></div>
 
   <section class="section" aria-labelledby="h-cats">
-    <div class="section-head" data-reveal><div><p class="eyebrow">01 — Kategorie</p><h2 class="h2" id="h-cats">Wszystko do promocji w jednym miejscu</h2></div><a class="more" href="#wszystkie">Cały asortyment ${ARROW}</a></div>
-    <div class="cat-grid">
+    <div class="section-head" data-reveal><div><p class="eyebrow">01 — Oferta</p><h2 class="h2" id="h-cats">Dwie rzeczy, zrobione porządnie</h2></div><a class="more" href="#wszystkie">Wszystkie produkty ${ARROW}</a></div>
+    <div class="cat-grid cat-grid-2">
       ${state.categories.map((c, i) => {
-        const list = counts[c.slug];
+        const list = state.products.filter((p) => p.category === c.slug);
+        if (!list.length) return '';
         const from = Math.min(...list.map((p) => p.price_from_gr));
         const cover = withImage(list);
-        return `<a class="cat-tile" href="#kategoria-${esc(c.slug)}" data-reveal style="--i:${i % 3}">
-          ${cover ? media(cover, { i: 0, sizes: '(max-width: 600px) 92vw, (max-width: 900px) 46vw, 380px' }) : ''}
+        return `<a class="cat-tile" href="#kategoria-${esc(c.slug)}" data-reveal style="--i:${i}">
+          ${cover ? media(cover, { sizes: '(max-width: 600px) 92vw, 600px' }) : ''}
           <div class="cat-body"><span class="cat-count mono">${list.length} ${plural(list.length, 'produkt', 'produkty', 'produktów')} · od ${zl(from)}</span>
           <span class="h3">${esc(c.name)}</span><p>${esc(c.lead)}</p><span class="cat-go">${ARROW}</span></div>
         </a>`;
       }).join('')}
     </div>
+    <div class="grid">${state.products.map(productCard).join('')}</div>
   </section>
 
-  <section class="section" aria-labelledby="h-best">
-    <div class="section-head" data-reveal><div><p class="eyebrow">02 — Polecane</p><h2 class="h2" id="h-best">Najczęściej wybierane</h2></div><a class="more" href="#wszystkie">Wszystkie produkty ${ARROW}</a></div>
-    <div class="grid">${[...best, ...more].map(productCard).join('')}</div>
-  </section>
-
-  <section class="section" aria-labelledby="h-for">
-    <div class="section-head" data-reveal><div><p class="eyebrow">03 — Dla kogo</p><h2 class="h2" id="h-for">Zestawy pod konkretną potrzebę</h2></div></div>
-    <div class="aud-grid">
-      ${audiences.map((a, i) => `<article class="aud" data-reveal style="--i:${i}">
-        <div class="aud-media">${a.img ? media(a.img, { i: imagesOf(a.img).length > 1 ? 1 : 0, sizes: '(max-width: 900px) 92vw, 380px' }) : ''}</div>
-        <div class="aud-body"><h3 class="h3">${a.title}</h3><p>${a.text}</p>
-        <ul class="aud-links">${a.links.map((p) => `<li><a href="#p-${esc(p.slug)}"><span>${esc(p.name)}</span><span class="mono">od ${zl(p.price_from_gr)}</span></a></li>`).join('')}</ul></div>
-      </article>`).join('')}
-    </div>
-  </section>
+  ${formatsSection()}
 
   <section class="section" aria-labelledby="h-how">
-    <div class="section-head" data-reveal><div><p class="eyebrow">04 — Proces</p><h2 class="h2" id="h-how">Jak powstaje zamówienie</h2></div></div>
+    <div class="section-head" data-reveal><div><p class="eyebrow">03 — Proces</p><h2 class="h2" id="h-how">Jak powstaje zamówienie</h2></div></div>
     <ol class="steps" data-reveal>
-      <li style="--i:0"><span class="h3">Wybierasz produkt</span><p>Nakład, papier, kolor lub rozmiar. Cena przelicza się od razu.</p></li>
-      <li style="--i:1"><span class="h3">Wgrywasz projekt</span><p>Twój PDF, logo do nadruku albo zamówiony u nas projekt.</p></li>
-      <li style="--i:2"><span class="h3">Akceptujesz podgląd</span><p>Przy produktach z logo dostajesz mailem proof do zatwierdzenia.</p></li>
-      <li style="--i:3"><span class="h3">Drukujemy i wysyłamy</span><p>Paczkomat, kurier albo link do pobrania przy produktach cyfrowych.</p></li>
+      <li style="--i:0"><span class="h3">Wybierasz produkt</span><p>Rodzaj wizytówek i nakład albo format plakatu. Cena przelicza się od razu.</p></li>
+      <li style="--i:1"><span class="h3">Wgrywasz plik</span><p>Gotowy PDF albo logo i teksty do projektu, który przygotuje nasz grafik.</p></li>
+      <li style="--i:2"><span class="h3">Akceptujesz podgląd</span><p>Sprawdzamy spady i rozdzielczość, a podgląd wysyłamy mailem do zatwierdzenia.</p></li>
+      <li style="--i:3"><span class="h3">Drukujemy i wysyłamy</span><p>Wizytówki Paczkomatem, plakaty w sztywnej tubie kurierem.</p></li>
     </ol>
   </section>
 
-  <section class="cta-band" data-reveal>
-    <div><p class="eyebrow">Nie masz projektu?</p><h2 class="h2">Zaprojektujemy go za Ciebie.</h2>
-    <p>Logo, ulotka albo cały brandbook — grafik przygotuje projekt, a Ty dostaniesz pliki gotowe do druku i do sieci.</p></div>
-    <div class="cta-actions"><a class="btn btn-primary btn-lg" href="#kategoria-uslugi">Usługi projektowe ${ARROW}</a><a class="btn btn-ghost btn-lg" href="#p-karta-podarunkowa">Karta podarunkowa</a></div>
-  </section>
+  ${state.bySlug['projekt-plakatu'] ? `<section class="cta-band" data-reveal>
+    <div><p class="eyebrow">Nie masz projektu?</p><h2 class="h2">Zaprojektujemy plakat za Ciebie.</h2>
+    <p>Dwie propozycje, dwie rundy poprawek i pliki gotowe do druku oraz do social mediów — w formacie od A5 do A0.</p></div>
+    <div class="cta-actions"><a class="btn btn-primary btn-lg" href="#p-projekt-plakatu">Projekt plakatu ${ARROW}</a>${druk ? '<a class="btn btn-ghost btn-lg" href="#p-druk-plakatu">Sam druk</a>' : ''}</div>
+  </section>` : ''}
 
   <section class="section" aria-label="Dostawa i płatności">
     <div class="facts">
       <div class="fact" data-reveal style="--i:0">${ICON.truck}<span class="h3">Dostawa od ${zl(SHIPPING.paczkomat.price_gr)}</span><p>Paczkomat InPost lub kurier. Od ${zl(FREE_SHIPPING_GR)} wysyłka gratis.</p></div>
-      <div class="fact" data-reveal style="--i:1">${ICON.mail}<span class="h3">Cyfrowe od ręki</span><p>Szablony i karty podarunkowe przychodzą mailem zaraz po płatności.</p></div>
+      <div class="fact" data-reveal style="--i:1">${ICON.check}<span class="h3">Podgląd przed drukiem</span><p>Nic nie trafia do maszyny bez Twojej akceptacji.</p></div>
       <div class="fact" data-reveal style="--i:2">${ICON.card}<span class="h3">BLIK, karta, Przelewy24</span><p>W wersji demonstracyjnej płacisz testowym kodem, bez prawdziwych pieniędzy.</p></div>
-      <div class="fact" data-reveal style="--i:3">${ICON.back}<span class="h3">14 dni na zwrot</span><p>Dla produktów bez personalizacji. Reklamację rozpatrujemy w 14 dni.</p></div>
+      <div class="fact" data-reveal style="--i:3">${ICON.back}<span class="h3">Reklamacja w 14 dni</span><p>Błąd druku po naszej stronie? Drukujemy ponownie albo zwracamy pieniądze.</p></div>
     </div>
   </section>`;
+}
+
+function bindHome() {
+  // przewijany pasek pracuje tylko, gdy jest na ekranie
+  const marquee = view.querySelector('.marquee');
+  if (marquee && 'IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => marquee.classList.toggle('paused', !e.isIntersecting)).observe(marquee);
+  }
+  // format na rysunku ↔ wiersz w tabeli — podświetlają się razem
+  const wrap = view.querySelector('.fmt-wrap');
+  if (!wrap) return;
+  const set = (f) => wrap.querySelectorAll('[data-f]').forEach((el) => el.classList.toggle('on', el.dataset.f === f));
+  wrap.querySelectorAll('[data-f]').forEach((el) => {
+    el.addEventListener('pointerenter', () => set(el.dataset.f));
+    el.addEventListener('focus', () => set(el.dataset.f));
+  });
+  wrap.addEventListener('pointerleave', () => set('A4'));
+  set('A4');
 }
 
 function sortProducts(list) {
@@ -448,7 +381,7 @@ function listing({ title, lead, crumbs, products }) {
     </label>
   </div>
   ${sorted.length ? `<div class="grid">${sorted.map((p, i) => productCard(p, i)).join('')}</div>`
-    : `<div class="empty"><p class="h3">Nic nie pasuje do „${esc(state.query)}”.</p><p class="muted">Spróbuj krótszego słowa, np. „kubek” albo „roll”.</p><a class="btn" href="#wszystkie">Pokaż wszystkie produkty</a></div>`}`;
+    : `<div class="empty"><p class="h3">Nic nie pasuje do „${esc(state.query)}”.</p><p class="muted">Spróbuj krótszego słowa, np. „wizytówki” albo „plakat”.</p><a class="btn" href="#wszystkie">Pokaż wszystkie produkty</a></div>`}`;
 }
 
 function stockInfo(p, v) {
@@ -511,14 +444,15 @@ function renderProduct(p) {
       </div>
       <div class="pdp-price">
         <span class="price" id="pdp-price"></span>
-        <p class="small" id="pdp-omnibus" ${p.lowest_30d_gr ? '' : 'hidden'}>Najniższa cena z 30 dni przed obniżką: ${p.lowest_30d_gr ? zl(p.lowest_30d_gr) : ''}</p>
+        ${p.promo ? `<p class="promo-note">Promocja −${p.promo.percent}%${p.promo.label ? ` · ${esc(p.promo.label)}` : ''}${p.promo.ends_at ? ` — do ${until(p.promo.ends_at)}` : ''}</p>` : ''}
+        <p class="small" id="pdp-omnibus" hidden></p>
         <p class="small">${p.vat_rate === null ? 'Bon różnego przeznaczenia — VAT naliczamy przy jego wykorzystaniu.' : `Cena brutto, zawiera ${p.vat_rate}% VAT.`}</p>
       </div>
       ${showVariants ? `<fieldset>
-        <legend>${p.type === 'gift_card' ? 'Wartość' : p.slug === 'koszulka-z-logo' ? 'Rozmiar' : p.variants[0].label.includes('szt') || p.variants[0].label.includes('ark') ? 'Nakład' : 'Wariant'}</legend>
+        <legend>${p.type === 'gift_card' ? 'Wartość' : /^A\d/.test(p.variants[0].label) ? 'Format' : p.variants[0].label.includes('szt') || p.variants[0].label.includes('ark') ? 'Nakład' : 'Wariant'}</legend>
         <div class="options">${p.variants.map((v) => `<label class="opt">
           <input type="radio" name="variant" id="v-${v.id}" value="${v.id}" ${v.id === firstAvailable.id ? 'checked' : ''} ${v.available ? '' : 'disabled'}>
-          <span>${esc(v.label)}<small>${v.available ? zl(v.price_gr) : 'brak'}</small></span></label>`).join('')}</div>
+          <span>${esc(v.label)}<small>${v.available ? `${zl(v.price_gr)}${compareOf(p, v) ? ` <s>${zl(compareOf(p, v))}</s>` : ''}` : 'brak'}</small></span></label>`).join('')}</div>
       </fieldset>` : `<input type="hidden" name="variant" value="${firstAvailable.id}">`}
       ${p.personalizable ? `<div class="field">
         <label for="pdp-file">Plik z logo lub projektem <span class="muted">(opcjonalnie)</span></label>
@@ -572,6 +506,7 @@ function bindProduct(p) {
   const stockEl = document.getElementById('pdp-stock');
   const skuEl = document.getElementById('pdp-sku');
   const addBtn = document.getElementById('add-btn');
+  const omnibusEl = document.getElementById('pdp-omnibus');
 
   const selected = () => {
     const id = Number(new FormData(form).get('variant'));
@@ -583,8 +518,12 @@ function bindProduct(p) {
     qty.max = String(Math.max(1, max));
     if (Number(qty.value) > max) qty.value = String(Math.max(1, max));
     const n = Math.max(1, Number(qty.value) || 1);
-    const promo = p.compare_at_gr && p.compare_at_gr > v.price_gr;
-    priceEl.innerHTML = `${zl(v.price_gr * n)}${promo ? `<s>${zl(p.compare_at_gr * n)}</s>` : ''}`;
+    const before = compareOf(p, v);
+    const low = lowestOf(p, v);
+    priceEl.innerHTML = `${zl(v.price_gr * n)}${before ? `<s>${zl(before * n)}</s>` : ''}`;
+    priceEl.classList.toggle('is-promo', !!before);
+    omnibusEl.hidden = !low;
+    omnibusEl.textContent = low ? `Najniższa cena z 30 dni przed obniżką: ${zl(low)}${n > 1 ? ' / szt.' : ''}` : '';
     const s = stockInfo(p, v);
     stockEl.textContent = s.text;
     stockEl.dataset.level = s.level;
@@ -723,7 +662,7 @@ function drawerHtml(added) {
   const head = `<div class="drawer-head"><h2 class="h3" id="drawer-title">${added ? 'Dodano do koszyka' : 'Koszyk'} <span class="mono muted">${t?.items_count ?? 0}</span></h2>
     <button type="button" class="drawer-x" data-close aria-label="Zamknij koszyk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>`;
   if (!lines.length) {
-    return `${head}<div class="drawer-empty"><p class="h3">Koszyk jest pusty.</p><p class="muted">Zajrzyj do najczęściej wybieranych produktów.</p><a class="btn btn-primary" href="#wszystkie" data-close>Przeglądaj produkty</a></div>`;
+    return `${head}<div class="drawer-empty"><p class="h3">Koszyk jest pusty.</p><p class="muted">Zobacz wizytówki i plakaty.</p><a class="btn btn-primary" href="#wszystkie" data-close>Przeglądaj produkty</a></div>`;
   }
   const missing = t.shipping ? t.missing_for_free_shipping_gr : 0;
   return `${head}
@@ -772,8 +711,8 @@ function renderCart() {
   const head = `<div class="page-head"><div class="crumbs"><a href="#start">Start</a><span>/</span><span>Koszyk</span></div><h1 class="h2">Koszyk</h1></div>`;
   const cart = state.cart;
   if (!cart?.lines.length) {
-    return `${head}<div class="empty"><p class="h3">Koszyk jest pusty.</p><p class="muted">Zacznij od najczęściej wybieranych wizytówek albo przejrzyj cały asortyment.</p>
-      <div class="hero-actions"><a class="btn btn-primary" href="#p-wizytowki-standard">Wizytówki Standard</a><a class="btn" href="#wszystkie">Cały asortyment</a></div></div>`;
+    return `${head}<div class="empty"><p class="h3">Koszyk jest pusty.</p><p class="muted">Zacznij od wizytówek albo zobacz plakaty od A5 do A0.</p>
+      <div class="hero-actions"><a class="btn btn-primary" href="#kategoria-wizytowki">Wizytówki</a><a class="btn" href="#kategoria-plakaty">Plakaty</a></div></div>`;
   }
   const t = cart.totals;
   const blocked = cart.lines.some((l) => l.problem);
@@ -1554,7 +1493,8 @@ function toast(text, withLink = true) {
 function renderNav(route) {
   catNav.innerHTML = [
     `<a href="#wszystkie" ${route === 'wszystkie' ? 'aria-current="page"' : ''}>Wszystko</a>`,
-    ...state.categories.map((c) => `<a href="#kategoria-${esc(c.slug)}" ${route === `kategoria-${c.slug}` ? 'aria-current="page"' : ''}>${esc(c.name)}</a>`)
+    ...state.categories.map((c) => `<a href="#kategoria-${esc(c.slug)}" ${route === `kategoria-${c.slug}` ? 'aria-current="page"' : ''}>${esc(c.name)}</a>`),
+    ...(promoProducts().length ? [`<a href="#promocje" class="nav-promo" ${route === 'promocje' ? 'aria-current="page"' : ''}>Promocje</a>`] : [])
   ].join('');
 }
 
@@ -1565,10 +1505,13 @@ function render() {
   let after = null;
 
   if (route === 'start') {
-    html = renderHome();
+    html = renderHome(); after = bindHome;
+  } else if (route === 'promocje') {
+    html = listing({ title: 'Promocje', lead: 'Obniżone ceny — przy każdym produkcie widzisz też najniższą cenę z 30 dni przed obniżką.', crumbs: '<span>Promocje</span>', products: promoProducts() });
+    title = 'Promocje — PromoKuźnia';
   } else if (route === 'wszystkie') {
-    html = listing({ title: 'Cały asortyment', lead: 'Druk, gadżety, systemy wystawiennicze, szablony cyfrowe, usługi i karty podarunkowe.', crumbs: '<span>Wszystko</span>', products: state.products });
-    title = 'Cały asortyment — PromoKuźnia';
+    html = listing({ title: 'Wszystkie produkty', lead: 'Wizytówki oraz projekt i druk plakatów od A5 do A0.', crumbs: '<span>Wszystko</span>', products: state.products });
+    title = 'Wszystkie produkty — PromoKuźnia';
   } else if (route.startsWith('kategoria-')) {
     const cat = state.categories.find((c) => `kategoria-${c.slug}` === route);
     if (cat) {
@@ -1699,9 +1642,12 @@ loadCatalog().then(async (data) => {
   }
   state.store = data.source === 'api' ? apiStore : createLocalStore(data, window.__DEMO_COUPONS__ ?? []);
   if (state.store.mode === 'api') state.store.config().then((c) => { state.turnstileKey = c.turnstile_site_key; mountTurnstile(); }).catch(() => {});
-  const [cart, customer] = await Promise.all([state.store.getCart(), state.store.me()]);
-  setCart(cart);
-  setCustomer(customer);
+  // katalog jest — rysujemy od razu; koszyk i konto dochodzą w tle (strony, które ich potrzebują, czekają)
+  const session = Promise.all([state.store.getCart(), state.store.me()]).then(([cart, customer]) => {
+    setCart(cart);
+    setCustomer(customer);
+  }).catch(() => {});
+  if (/^#(koszyk|kasa|konto|zamowienie)/.test(location.hash)) await session;
   render();
   state.current = decodeURIComponent(location.hash.slice(1)) || 'start';
 }).catch((err) => {

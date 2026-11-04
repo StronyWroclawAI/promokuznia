@@ -2,6 +2,7 @@
 import { json, problem, nowIso } from '../_lib/http.js';
 import { parseCookies, SESSION_COOKIE, clearCookie } from '../_lib/cookies.js';
 import { sha256 } from '../_lib/crypto.js';
+import { sweepPromotions } from '../_lib/promotions.js';
 
 const SAFE = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -33,6 +34,8 @@ export async function onRequest(context) {
 
   let response;
   try {
+    // promocje z minionym terminem wracają do starych cen (jedno lekkie zapytanie)
+    await sweepPromotions(env.DB).catch(() => 0);
     response = await context.next();
   } catch (err) {
     console.error('API error', request.method, new URL(request.url).pathname, err?.stack ?? err);

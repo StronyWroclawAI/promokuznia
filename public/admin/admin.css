@@ -18,7 +18,7 @@ body.admin { background: var(--paper); }
 /* KPI */
 .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); margin-bottom: var(--s-6); }
 .kpi { padding: var(--s-4); background: var(--sheet); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: var(--s-1); }
-.kpi .v { font: 800 28px/1.1 var(--f-display); font-stretch: 110%; font-variant-numeric: tabular-nums; }
+.kpi .v { font: 800 28px/1.1 var(--f-display); font-stretch: 100%; font-variant-numeric: tabular-nums; }
 .kpi .small { margin: 0; }
 
 .todo { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-3); margin-bottom: var(--s-6); }
@@ -183,3 +183,22 @@ body.admin { background: var(--paper); }
   .pf-grid.two, .pf-grid.three { grid-template-columns: minmax(0, 1fr); }
   .pf-card { padding: var(--s-4); }
 }
+
+/* ── Promocje ── */
+.promo-block { margin-bottom: var(--s-5); }
+.coupon-form, .promo-form { display: grid; grid-template-columns: 1.4fr 1fr .8fr .8fr .8fr 1fr auto; gap: var(--s-3); align-items: end; }
+.promo-form { grid-template-columns: 2fr .7fr 1fr 1.2fr auto; }
+.coupon-form .btn, .promo-form .btn { padding-block: 10px; }
+.code-row { display: flex; gap: 6px; }
+.code-row input { flex: 1; min-width: 0; text-transform: uppercase; }
+.code-row .btn { padding: 8px 10px; font-size: 13px; }
+.promo-preview .small { margin: 0 0 4px; }
+.promo-prices { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.promo-prices li { display: flex; gap: 8px; align-items: baseline; padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); font-size: 13px; }
+.promo-prices s { color: var(--muted); }
+.promo-prices b { color: var(--accent); }
+.badge-mini { font: 500 10px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .05em; padding: 3px 5px; border-radius: 2px; background: var(--accent); color: var(--accent-ink); }
+.promo-history summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.promo-history ul { margin-top: var(--s-2); font-size: 14px; }
+@media (max-width: 1100px) { .coupon-form { grid-template-columns: repeat(3, minmax(0, 1fr)); } .promo-form { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .coupon-form, .promo-form { grid-template-columns: minmax(0, 1fr); } }

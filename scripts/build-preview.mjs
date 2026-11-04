@@ -25,13 +25,15 @@ const demoCoupons = [
 ];
 
 const body = html.slice(html.indexOf('<!--APP-->') + 10, html.indexOf('<!--/APP-->'));
-const fonts = html.match(/<link rel="stylesheet" href="https:\/\/fonts[^>]+>/)[0];
+// fonty: w podglądzie wklejone jako data: (tylko podstawowy zestaw łaciński — polskie znaki biorą się z latin-ext)
+const fontData = async (f) => `data:font/woff2;base64,${(await readFile(new URL(`public/fonts/${f}`, root))).toString('base64')}`;
+let inlineCss = css;
+for (const f of css.match(/[\w-]+\.woff2/g) ?? []) inlineCss = inlineCss.replace(`/fonts/${f}`, await fontData(f));
 
 const out = `<title>PromoKuźnia</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-${fonts}
 <style>
-${css}
+${inlineCss}
 </style>
 ${body}
 <script>window.__CATALOG__ = ${catalog.replace(/</g, '\\u003c')};

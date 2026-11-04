@@ -9,7 +9,7 @@ const TYPES = { physical: 'Fizyczny (wysyłka)', digital: 'Cyfrowy (do pobrania)
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const today = () => new Date().toISOString().slice(0, 10);
 let categoriesCache = null;
-const categories = async () => (categoriesCache ??= (await h.api('GET', '/api/categories')).categories);
+const categories = async () => (categoriesCache ??= (await h.api('GET', '/api/categories?wszystkie=1')).categories);
 
 function download(bytes, name, type = XLSX_MIME) {
   const url = URL.createObjectURL(new Blob([bytes], { type }));

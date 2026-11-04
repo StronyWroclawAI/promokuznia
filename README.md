@@ -17,7 +17,8 @@ Stack: **Cloudflare Pages + Pages Functions + D1** (później KV, R2, Cron), fro
 | 6 | Panel admina, maile (Resend), faktury (Fakturownia) | panel i maile gotowe; faktury — dalej |
 | 7 | Regulamin, prywatność, odstąpienie, limity prób, Turnstile, nagłówki, testy | gotowe |
 | 8 | Zdjęcia produktów, dodawanie produktów w panelu, import/eksport Excela, nowy wygląd z animacjami | gotowe |
-| 9 | Domena, tryb demo, karta portfolio | — |
+| 9 | Asortyment: wizytówki + plakaty A5–A0, promocje i kody rabatowe w panelu, wydajność | gotowe |
+| 10 | Domena, tryb demo, karta portfolio | — |
 
 ## Uruchomienie lokalne
 
@@ -101,6 +102,7 @@ migrations/0005_przesylki.sql dane przesyłek InPost
 migrations/0004_maile.sql     link do zamówienia w mailach, dziennik maili
 migrations/0003_…sql          token dostępu do zamówienia, płatności z próbami i symulatorem
 migrations/0007_zdjecia.sql   zdjęcia produktów (adres URL albo R2) + zdjęcia startowe z Pexels
+migrations/0008_…sql          promocje cenowe; katalog zawężony do wizytówek i plakatów
 seed/catalog.json             źródło asortymentu — edytuj tutaj
 scripts/build-seed.mjs        catalog.json → seed/seed.sql + public/data/catalog.json
 scripts/build-preview.mjs     cały sklep w jednym pliku HTML (dist/)
@@ -278,3 +280,42 @@ bez zewnętrznych bibliotek (`public/admin/xlsx.js`).
 na stronę produktu), elementy pojawiające się przy przewijaniu, szuflada koszyka z animacją dodania
 produktu, galeria z lupą, pasek „Do koszyka” na telefonie, przewijany pasek haseł. Przy włączonym
 w systemie ograniczeniu ruchu animacje są wyłączone, a treść widoczna od razu.
+
+## Wizytówki i plakaty, promocje, wydajność (Etap 9)
+
+**Asortyment.** Sklep sprzedaje tylko: Wizytówki Standard, Wizytówki Premium Soft Touch, Projekt plakatu
+(A5–A0, usługa grafika) i Druk plakatu (A5–A0, kreda satyna 170 g, wysyłka w tubie kurierem).
+Migracja `0008_promocje_wizytowki_plakaty.sql` ukrywa pozostałe produkty (zostają w bazie dla historii
+zamówień — można je włączyć w panelu) i dodaje nowe. Puste kategorie znikają z menu sklepu.
+
+```bash
+npm run db:migrate:remote     # 0007 (jeśli jeszcze nie) i 0008
+```
+
+**Panel → Promocje**
+
+- *Kody rabatowe:* procent, kwota albo darmowa dostawa; minimalna wartość koszyka, limit użyć, data
+  ważności, włączanie/wyłączanie, suma udzielonych rabatów. Kod użyty w zamówieniu można tylko wyłączyć.
+- *Promocje na produkty:* −X% na wszystkie warianty produktu, do wybranej daty albo do odwołania.
+  Promocja zmienia ceny i zapisuje je w historii cen, więc sklep pokazuje przekreśloną cenę
+  i najniższą cenę z 30 dni przed obniżką (Omnibus). Po terminie ceny wracają same
+  (sprawdzane przy każdym żądaniu API). W sklepie: znaczek −X%, pasek na stronie głównej, zakładka *Promocje*.
+
+| Endpoint | Co robi |
+|---|---|
+| `GET/POST /api/admin/coupons` | lista / nowy kod |
+| `PATCH/DELETE /api/admin/coupons/:id` | edycja, włączenie/wyłączenie / usunięcie nieużytego |
+| `GET/POST /api/admin/promotions` | lista / nowa promocja `{ product_id, percent, ends_at?, label? }` |
+| `DELETE /api/admin/promotions/:id` | zakończenie promocji teraz |
+
+**Wydajność**
+
+- Fonty z własnego serwera (`public/fonts`, Fontsource, licencja OFL) zamiast Google Fonts, z preload.
+- Katalog API z pamięci Cloudflare (Cache API, 60 s) — zmiany z panelu widać w sklepie po maks. minucie.
+- Sklep rysuje się zaraz po wczytaniu katalogu; koszyk i konto dochodzą w tle.
+- Drugie zdjęcie na karcie pobiera się dopiero po najechaniu; zdjęcia Pexels w rozmiarze dopasowanym do ekranu.
+- Lżejsze efekty (bez rozmycia tła), pasek haseł zatrzymany poza ekranem, `content-visibility` dla stopki.
+- `_headers`: fonty w pamięci przeglądarki na rok, `/assets/*` na 5 minut.
+- Lighthouse (mobile, lokalnie): wydajność 99, dostępność 100, CLS 0,03.
+
+Gdy zdjęcie produktu się nie wczyta, zamiast niego pojawia się spokojne tło z nazwą produktu.

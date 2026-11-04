@@ -10,3 +10,11 @@
 /admin/*
   X-Robots-Tag: noindex, nofollow
   Cache-Control: no-store
+
+# Fonty nie zmieniają się — przeglądarka trzyma je rok
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Skrypty i style: krótko z pamięci, w tle sprawdzenie nowej wersji (po wdrożeniu zmiany widać po ok. 5 min)
+/assets/*
+  Cache-Control: public, max-age=300, stale-while-revalidate=86400

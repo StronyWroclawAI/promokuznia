@@ -272,3 +272,39 @@ test('plan importu: SKU innego produktu i stan poniżej rezerwacji blokują zapi
   assert.equal(p.action, 'aktualizacja');
   assert.match(p.errors[0], /4 szt/);
 });
+
+// ───────────── Promocje i kody rabatowe (Etap 9) ─────────────
+
+import { normalizeCoupon } from '../functions/_lib/coupons.js';
+import { promoPrice } from '../functions/_lib/promotions.js';
+import { toProduct } from '../functions/_lib/catalog.js';
+
+test('kod rabatowy z panelu: wielkie litery, walidacja rodzaju i daty do końca dnia', () => {
+  const ok = normalizeCoupon({ code: ' lato20 ', kind: 'procent', value: 20, min_total_gr: 5000, valid_until: '2026-12-31' });
+  assert.deepEqual(ok.errors, []);
+  assert.equal(ok.value.code, 'LATO20');
+  assert.equal(ok.value.valid_until, '2026-12-31T22:59:59Z');
+  assert.equal(normalizeCoupon({ code: 'DOSTAWA', kind: 'darmowa_dostawa', value: 99 }).value.value, 0);
+  const bad = normalizeCoupon({ code: 'ź', kind: 'kwota', value: 6000, min_total_gr: 5000 });
+  assert.ok(bad.errors.some((e) => /Kod/.test(e)));
+  assert.ok(bad.errors.some((e) => /niższy niż minimalna/.test(e)));
+  assert.ok(normalizeCoupon({ code: 'ABC', kind: 'procent', value: 95 }).errors.length);
+});
+
+test('promocja: cena po rabacie zaokrąglona do grosza, nie niższa niż 1 zł', () => {
+  assert.equal(promoPrice(4900, 15), 4165);
+  assert.equal(promoPrice(690, 20), 552);
+  assert.equal(promoPrice(150, 90), 100);
+});
+
+test('katalog: wariant w promocji ma cenę sprzed obniżki i najniższą z 30 dni', () => {
+  const day = (d) => new Date(Date.now() - d * 86400000).toISOString();
+  const row = { id: 1, slug: 'x', name: 'X', category_slug: 'plakaty', specs_json: '[]', badges_json: '[]', compare_at_gr: 690 };
+  const variants = [{ id: 10, sku: 'A', label: 'A5', price_gr: 552, stock: null, reserved: 0 }, { id: 11, sku: 'B', label: 'A4', price_gr: 792, stock: null, reserved: 0 }];
+  const history = new Map([[10, [{ price_gr: 690, valid_from: day(60) }, { price_gr: 552, valid_from: day(0) }]], [11, [{ price_gr: 990, valid_from: day(60) }, { price_gr: 792, valid_from: day(0) }]]]);
+  const p = toProduct(row, variants, null, [], { percent: 20, label: null, ends_at: null, base: { 10: 690, 11: 990 } }, history);
+  assert.deepEqual(p.variants.map((v) => [v.compare_at_gr, v.lowest_30d_gr]), [[690, 690], [990, 990]]);
+  assert.equal(p.price_from_gr, 552);
+  assert.equal(p.compare_at_gr, 690);
+  assert.equal(p.promo.percent, 20);
+});

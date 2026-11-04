@@ -1,0 +1,3 @@
+Fonty: Anybody (Etcetera Type Co), Figtree (Erik Kennedy), IBM Plex Mono (IBM).
+Licencja SIL Open Font License 1.1 — https://openfontlicense.org
+Pliki woff2 z pakietów Fontsource (@fontsource-variable/anybody, @fontsource-variable/figtree, @fontsource/ibm-plex-mono).

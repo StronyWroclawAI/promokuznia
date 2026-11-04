@@ -14,7 +14,8 @@ const iso = (ms) => new Date(ms).toISOString().replace(/\.\d{3}Z$/, 'Z');
 
 const SKU_PREFIX = {
   'druk-firmowy': 'DR', 'gadzety-z-logo': 'GD', 'systemy-wystawiennicze': 'SW',
-  'produkty-cyfrowe': 'CY', 'uslugi': 'US', 'karty-podarunkowe': 'KP'
+  'produkty-cyfrowe': 'CY', 'uslugi': 'US', 'karty-podarunkowe': 'KP',
+  'wizytowki': 'DR', 'plakaty': 'PL'
 };
 
 const GPSR = {
@@ -73,7 +74,7 @@ src.products.forEach((p, i) => {
 
   const variants = p.variants.map((v, vi) => {
     variantId += 1;
-    const sku = `PK-${SKU_PREFIX[p.category]}${String(id).padStart(2, '0')}-${v.code}`;
+    const sku = p.sku_base ? `${p.sku_base}-${v.code}` : `PK-${SKU_PREFIX[p.category]}${String(id).padStart(2, '0')}-${v.code}`;
     sql.push(`INSERT INTO variants (id, product_id, sku, label, price_gr, stock, sort) VALUES (${[variantId, id, sku, v.label, v.price_gr, v.stock, vi].map(q).join(', ')});`);
     return { id: variantId, sku, label: v.label, price_gr: v.price_gr, stock: v.stock, available: v.stock === null ? true : v.stock > 0 };
   });
@@ -82,6 +83,10 @@ src.products.forEach((p, i) => {
   const history = p.price_history ?? [{ price_gr: p.variants[0].price_gr, days_ago: 60 }];
   for (const hrow of history) {
     sql.push(`INSERT INTO price_history (variant_id, price_gr, valid_from) VALUES (${variants[0].id}, ${hrow.price_gr}, ${q(iso(now - hrow.days_ago * DAY))});`);
+  }
+  // pozostałe warianty: jedna cena od 60 dni (potrzebne do ceny z 30 dni przy promocjach)
+  for (const v of variants.slice(1)) {
+    sql.push(`INSERT INTO price_history (variant_id, price_gr, valid_from) VALUES (${v.id}, ${v.price_gr}, ${q(iso(now - 60 * DAY))});`);
   }
 
   const images = (p.images ?? []).map((im, ii) => {

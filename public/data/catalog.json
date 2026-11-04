@@ -1,58 +1,30 @@
 {
-  "generated_at": "2026-11-04T22:30:22Z",
+  "generated_at": "2026-11-04T22:57:50Z",
   "categories": [
     {
       "id": 1,
-      "slug": "druk-firmowy",
-      "name": "Druk firmowy",
-      "lead": "Wizytówki, ulotki, papier i teczki — z plików klienta albo z naszego projektu.",
+      "slug": "wizytowki",
+      "name": "Wizytówki",
+      "lead": "Klasyczna kreda 350 g albo premium soft-touch z lakierem UV. Od 100 sztuk, wysyłka Paczkomatem.",
       "sort": 1
     },
     {
       "id": 2,
-      "slug": "gadzety-z-logo",
-      "name": "Gadżety z logo",
-      "lead": "Kubki, długopisy, torby i odzież z nadrukiem lub grawerem.",
+      "slug": "plakaty",
+      "name": "Plakaty",
+      "lead": "Projekt i druk plakatów od A5 do A0 — na wydarzenie, do witryny i na ścianę biura.",
       "sort": 2
-    },
-    {
-      "id": 3,
-      "slug": "systemy-wystawiennicze",
-      "name": "Systemy wystawiennicze",
-      "lead": "Roll-upy, ścianki i flagi na targi, eventy i witryny.",
-      "sort": 3
-    },
-    {
-      "id": 4,
-      "slug": "produkty-cyfrowe",
-      "name": "Produkty cyfrowe",
-      "lead": "Szablony do pobrania od ręki — bez wysyłki, link w mailu.",
-      "sort": 4
-    },
-    {
-      "id": 5,
-      "slug": "uslugi",
-      "name": "Usługi",
-      "lead": "Projekt i audyt wykonany przez grafika i marketera.",
-      "sort": 5
-    },
-    {
-      "id": 6,
-      "slug": "karty-podarunkowe",
-      "name": "Karty podarunkowe",
-      "lead": "Bon na dowolne produkty PromoKuźni, ważny 12 miesięcy.",
-      "sort": 6
     }
   ],
   "products": [
     {
       "id": 1,
       "slug": "wizytowki-standard",
-      "category": "druk-firmowy",
+      "category": "wizytowki",
       "name": "Wizytówki Standard",
       "type": "physical",
       "short": "Kreda matowa 350 g/m², druk dwustronny 4+4, format 85×55 mm.",
-      "description": "Najczęściej zamawiane wizytówki: sztywny papier kredowy 350 g/m², żywe kolory CMYK po obu stronach i równe cięcie na gilotynie. Wgrywasz własny PDF albo projektujesz wizytówkę w naszym kreatorze.",
+      "description": "Najczęściej zamawiane wizytówki: sztywny papier kredowy 350 g/m², żywe kolory CMYK po obu stronach i równe cięcie. Wgrywasz własny plik PDF — przed drukiem sprawdzamy spady i rozdzielczość, a podgląd wysyłamy do akceptacji.",
       "vat_rate": 23,
       "personalizable": true,
       "lead_time_days": 3,
@@ -74,8 +46,12 @@
           "alt": "Stosy białych wizytówek na stole"
         },
         {
-          "src": "https://images.pexels.com/photos/8947637/pexels-photo-8947637.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Wizytówki na fakturowanym tle"
+          "src": "https://images.pexels.com/photos/4466175/pexels-photo-4466175.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Wizytówki na biurku obok żółtego kwiatu"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8947692/pexels-photo-8947692.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Notes i wizytówka na biurku"
         }
       ],
       "specs": [
@@ -145,7 +121,7 @@
     {
       "id": 2,
       "slug": "wizytowki-soft-touch",
-      "category": "druk-firmowy",
+      "category": "wizytowki",
       "name": "Wizytówki Premium Soft Touch",
       "type": "physical",
       "short": "Aksamitna folia soft-touch i lakier UV wybiórczy na logo.",
@@ -173,6 +149,10 @@
         {
           "src": "https://images.pexels.com/photos/8489953/pexels-photo-8489953.jpeg?auto=compress&cs=tinysrgb&w=1200",
           "alt": "Wizytówki na ciemnych kamieniach"
+        },
+        {
+          "src": "https://images.pexels.com/photos/6373839/pexels-photo-6373839.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Wizytówki na desce z bawełną"
         }
       ],
       "specs": [
@@ -223,274 +203,178 @@
     },
     {
       "id": 3,
-      "slug": "ulotki-a5",
-      "category": "druk-firmowy",
-      "name": "Ulotki A5",
-      "type": "physical",
-      "short": "Kreda błysk 130 g/m², 4+4, idealne do skrzynek i na ladę.",
-      "description": "Klasyczna ulotka A5 na kredzie błyszczącej 130 g/m². Sprawdza się w kolportażu, na ladzie i jako wkładka do paczek.",
+      "slug": "projekt-plakatu",
+      "category": "plakaty",
+      "name": "Projekt plakatu",
+      "type": "service",
+      "short": "Plakat zaprojektowany przez grafika — od A5 do A0, gotowy do druku i do internetu.",
+      "description": "Opisz wydarzenie, ofertę albo promocję i dołącz logo, a grafik przygotuje plakat w wybranym formacie. Dostajesz dwie propozycje, dwie rundy poprawek i komplet plików: PDF do druku ze spadami oraz wersję do social mediów. Plakat możesz od razu wydrukować u nas — dodaj do koszyka „Druk plakatu” w tym samym formacie.",
       "vat_rate": 23,
       "personalizable": true,
-      "lead_time_days": 3,
-      "weight_g": 4200,
-      "dims_cm": [
-        23,
-        16,
-        18
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "B",
+      "lead_time_days": 4,
+      "weight_g": null,
+      "dims_cm": null,
+      "shipping_class": null,
+      "parcel_size": null,
       "art": {
-        "shape": "flyer",
-        "tone": "cyan"
+        "shape": "pentool",
+        "tone": "magenta"
       },
       "images": [
         {
-          "src": "https://images.pexels.com/photos/8292889/pexels-photo-8292889.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Ulotki i broszury na biurku"
+          "src": "https://images.pexels.com/photos/13451104/pexels-photo-13451104.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Grafik projektujący przy komputerze"
         },
         {
-          "src": "https://images.pexels.com/photos/8526705/pexels-photo-8526705.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Broszury na drewnianym stole"
+          "src": "https://images.pexels.com/photos/12903003/pexels-photo-12903003.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Projektowanie na tablecie graficznym i laptopie"
+        },
+        {
+          "src": "https://images.pexels.com/photos/4348404/pexels-photo-4348404.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Projekt graficzny na ekranie laptopa"
         }
       ],
       "specs": [
         [
-          "Format",
-          "148 × 210 mm"
+          "Co dostajesz",
+          "2 propozycje i 2 rundy poprawek"
         ],
         [
-          "Papier",
-          "kreda błysk 130 g/m²"
+          "Pliki",
+          "PDF do druku (spad 3 mm, CMYK) + PNG do internetu"
         ],
         [
-          "Kolorystyka",
-          "4+4 CMYK"
+          "Termin",
+          "pierwsze propozycje w 4 dni robocze"
+        ],
+        [
+          "Formaty",
+          "A5–A0, w pionie lub w poziomie"
+        ],
+        [
+          "Materiały",
+          "logo i teksty wgrywasz w koszyku albo wysyłasz mailem"
         ]
       ],
-      "badges": [],
+      "badges": [
+        "Nowość"
+      ],
       "compare_at_gr": null,
       "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
+      "gpsr": null,
       "variants": [
         {
           "id": 7,
-          "sku": "PK-DR03-500",
-          "label": "500 szt.",
-          "price_gr": 12900,
-          "stock": 999,
+          "sku": "PK-PL-PRJ-A5",
+          "label": "A5 · 148 × 210 mm",
+          "price_gr": 24900,
+          "stock": null,
           "available": true
         },
         {
           "id": 8,
-          "sku": "PK-DR03-1000",
-          "label": "1000 szt.",
-          "price_gr": 16900,
-          "stock": 999,
+          "sku": "PK-PL-PRJ-A4",
+          "label": "A4 · 210 × 297 mm",
+          "price_gr": 26900,
+          "stock": null,
           "available": true
         },
         {
           "id": 9,
-          "sku": "PK-DR03-2500",
-          "label": "2500 szt.",
+          "sku": "PK-PL-PRJ-A3",
+          "label": "A3 · 297 × 420 mm",
           "price_gr": 29900,
-          "stock": 999,
+          "stock": null,
           "available": true
-        }
-      ],
-      "price_from_gr": 12900
-    },
-    {
-      "id": 4,
-      "slug": "ulotki-dl-skladane",
-      "category": "druk-firmowy",
-      "name": "Ulotki DL składane",
-      "type": "physical",
-      "short": "Format A4 bigowany i składany do DL — 6 stron na ofertę lub menu.",
-      "description": "Arkusz A4 złożony dwukrotnie do formatu DL (99 × 210 mm). Sześć stron miejsca na cennik, menu albo opis usług, bez kosztów broszury.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 4,
-      "weight_g": 6100,
-      "dims_cm": [
-        23,
-        12,
-        25
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "B",
-      "art": {
-        "shape": "flyer",
-        "tone": "yellow"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/8526705/pexels-photo-8526705.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Składane broszury na drewnianym stole"
         },
         {
-          "src": "https://images.pexels.com/photos/8292889/pexels-photo-8292889.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Ulotki i broszury na biurku"
-        }
-      ],
-      "specs": [
-        [
-          "Format po złożeniu",
-          "99 × 210 mm"
-        ],
-        [
-          "Bigowanie",
-          "2 bigi, falc zwijany"
-        ],
-        [
-          "Papier",
-          "kreda mat 170 g/m²"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
           "id": 10,
-          "sku": "PK-DR04-1000",
-          "label": "1000 szt.",
-          "price_gr": 24900,
-          "stock": 999,
+          "sku": "PK-PL-PRJ-A2",
+          "label": "A2 · 420 × 594 mm",
+          "price_gr": 34900,
+          "stock": null,
+          "available": true
+        },
+        {
+          "id": 11,
+          "sku": "PK-PL-PRJ-A1",
+          "label": "A1 · 594 × 841 mm",
+          "price_gr": 39900,
+          "stock": null,
+          "available": true
+        },
+        {
+          "id": 12,
+          "sku": "PK-PL-PRJ-A0",
+          "label": "A0 · 841 × 1189 mm",
+          "price_gr": 44900,
+          "stock": null,
           "available": true
         }
       ],
       "price_from_gr": 24900
     },
     {
-      "id": 5,
-      "slug": "papier-firmowy-a4",
-      "category": "druk-firmowy",
-      "name": "Papier firmowy A4",
+      "id": 4,
+      "slug": "druk-plakatu",
+      "category": "plakaty",
+      "name": "Druk plakatu A5–A0",
       "type": "physical",
-      "short": "Offset 120 g/m², bezpieczny do drukarek laserowych.",
-      "description": "Papier z nadrukowaną stopką i logo, na którym wydrukujesz pisma i oferty w biurze. Offset 120 g/m² nie zwija się w drukarce laserowej.",
+      "short": "Kreda satyna 170 g/m², pełny kolor. Od 1 sztuki, wysyłka w tubie.",
+      "description": "Plakaty z Twojego pliku albo z projektu zamówionego u nas. Drukujemy na satynowanej kredzie 170 g/m² — kolory są nasycone, a papier nie odbija światła jak błysk. Plakaty zwijamy do sztywnej tuby kartonowej, więc docierają bez zagięć. Cena dotyczy jednej sztuki; większy nakład ustawisz liczbą w koszyku.",
       "vat_rate": 23,
       "personalizable": true,
-      "lead_time_days": 4,
-      "weight_g": 3900,
+      "lead_time_days": 2,
+      "weight_g": 600,
       "dims_cm": [
-        31,
-        22,
-        6
+        95,
+        10,
+        10
       ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "A",
+      "shipping_class": "kurier",
+      "parcel_size": null,
       "art": {
-        "shape": "letter",
+        "shape": "flyer",
         "tone": "cyan"
       },
       "images": [
         {
-          "src": "https://images.pexels.com/photos/7598073/pexels-photo-7598073.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Dokumenty firmowe z identyfikacją marki na biurku"
+          "src": "https://images.pexels.com/photos/6373486/pexels-photo-6373486.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Plakat na ścianie we wnętrzu"
         },
         {
-          "src": "https://images.pexels.com/photos/8947692/pexels-photo-8947692.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Notes i wizytówka"
+          "src": "https://images.pexels.com/photos/3752659/pexels-photo-3752659.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Plakaty reklamowe na ścianie"
+        },
+        {
+          "src": "https://images.pexels.com/photos/3964819/pexels-photo-3964819.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Plakaty na ścianie w mieście"
+        },
+        {
+          "src": "https://images.pexels.com/photos/7149338/pexels-photo-7149338.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Wieszanie plakatu na ścianie"
         }
       ],
       "specs": [
-        [
-          "Format",
-          "210 × 297 mm"
-        ],
         [
           "Papier",
-          "offset 120 g/m²"
+          "kreda satyna 170 g/m²"
         ],
         [
-          "Kolorystyka",
-          "4+0 CMYK"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 11,
-          "sku": "PK-DR05-250",
-          "label": "250 ark.",
-          "price_gr": 15900,
-          "stock": 999,
-          "available": true
-        },
-        {
-          "id": 12,
-          "sku": "PK-DR05-500",
-          "label": "500 ark.",
-          "price_gr": 22900,
-          "stock": 999,
-          "available": true
-        }
-      ],
-      "price_from_gr": 15900
-    },
-    {
-      "id": 6,
-      "slug": "teczki-ofertowe-a4",
-      "category": "druk-firmowy",
-      "name": "Teczki ofertowe A4",
-      "type": "physical",
-      "short": "Karton 350 g/m², grzbiet 5 mm, nacięcie na wizytówkę.",
-      "description": "Teczka na ofertę lub umowę, która mieści do 50 kartek. Nacięcie na wizytówkę w skrzydełku i folia matowa zabezpieczająca przed zarysowaniem.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 6,
-      "weight_g": 9800,
-      "dims_cm": [
-        34,
-        25,
-        20
-      ],
-      "shipping_class": "kurier",
-      "parcel_size": "C",
-      "art": {
-        "shape": "folder",
-        "tone": "magenta"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/5668485/pexels-photo-5668485.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Zestaw teczek na dokumenty"
-        },
-        {
-          "src": "https://images.pexels.com/photos/1764956/pexels-photo-1764956.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Białe teczki na dokumenty"
-        }
-      ],
-      "specs": [
-        [
-          "Format",
-          "220 × 310 mm po złożeniu"
+          "Druk",
+          "4+0 CMYK, jednostronnie"
         ],
         [
-          "Karton",
-          "kreda 350 g/m² + folia mat 1+0"
+          "Plik",
+          "PDF, spad 3 mm; 300 dpi (A5–A3), min. 150 dpi (A2–A0)"
         ],
         [
-          "Grzbiet",
-          "5 mm"
+          "Pakowanie",
+          "tuba kartonowa"
+        ],
+        [
+          "Dostawa",
+          "kurier InPost"
         ]
       ],
       "badges": [],
@@ -504,1446 +388,54 @@
       "variants": [
         {
           "id": 13,
-          "sku": "PK-DR06-100",
-          "label": "100 szt.",
-          "price_gr": 54900,
-          "stock": 999,
+          "sku": "PK-PL-DRK-A5",
+          "label": "A5 · 148 × 210 mm",
+          "price_gr": 690,
+          "stock": null,
           "available": true
         },
         {
           "id": 14,
-          "sku": "PK-DR06-250",
-          "label": "250 szt.",
-          "price_gr": 89900,
-          "stock": 999,
+          "sku": "PK-PL-DRK-A4",
+          "label": "A4 · 210 × 297 mm",
+          "price_gr": 990,
+          "stock": null,
           "available": true
-        }
-      ],
-      "price_from_gr": 54900
-    },
-    {
-      "id": 7,
-      "slug": "naklejki-z-logo",
-      "category": "druk-firmowy",
-      "name": "Naklejki z logo",
-      "type": "physical",
-      "short": "Folia winylowa wycinana po obrysie, 5 × 5 cm.",
-      "description": "Naklejki na opakowania, laptopy i witryny. Folia winylowa odporna na wodę, cięta ploterem dokładnie po kształcie logo.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 4,
-      "weight_g": 200,
-      "dims_cm": [
-        20,
-        15,
-        1
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "A",
-      "art": {
-        "shape": "sticker",
-        "tone": "yellow"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/2902599/pexels-photo-2902599.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Naklejki z nadrukiem"
         },
         {
-          "src": "https://images.pexels.com/photos/17567386/pexels-photo-17567386.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Naklejki na laptopie"
-        }
-      ],
-      "specs": [
-        [
-          "Rozmiar",
-          "do 50 × 50 mm"
-        ],
-        [
-          "Materiał",
-          "folia winylowa biała, laminat"
-        ],
-        [
-          "Cięcie",
-          "po obrysie"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
           "id": 15,
-          "sku": "PK-DR07-100",
-          "label": "100 szt.",
-          "price_gr": 6900,
-          "stock": 999,
+          "sku": "PK-PL-DRK-A3",
+          "label": "A3 · 297 × 420 mm",
+          "price_gr": 1690,
+          "stock": null,
           "available": true
         },
         {
           "id": 16,
-          "sku": "PK-DR07-500",
-          "label": "500 szt.",
-          "price_gr": 18900,
-          "stock": 999,
+          "sku": "PK-PL-DRK-A2",
+          "label": "A2 · 420 × 594 mm",
+          "price_gr": 3490,
+          "stock": null,
           "available": true
-        }
-      ],
-      "price_from_gr": 6900
-    },
-    {
-      "id": 8,
-      "slug": "kubek-ceramiczny-z-logo",
-      "category": "gadzety-z-logo",
-      "name": "Kubek ceramiczny z logo",
-      "type": "physical",
-      "short": "330 ml, nadruk sublimacyjny dookoła, można myć w zmywarce.",
-      "description": "Kubek, który zostaje na biurku klienta na lata. Nadruk sublimacyjny na całym obwodzie nie ściera się w zmywarce. Zamawiasz od 1 sztuki — dobre na prezent i na próbę przed większym nakładem.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 3,
-      "weight_g": 450,
-      "dims_cm": [
-        15,
-        15,
-        12
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "A",
-      "art": {
-        "shape": "mug",
-        "tone": "magenta"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/4264049/pexels-photo-4264049.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Biały kubek ceramiczny"
         },
         {
-          "src": "https://images.pexels.com/photos/11075707/pexels-photo-11075707.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Kubek na stole"
-        }
-      ],
-      "specs": [
-        [
-          "Pojemność",
-          "330 ml"
-        ],
-        [
-          "Nadruk",
-          "sublimacja 360°"
-        ],
-        [
-          "Zmywarka",
-          "tak, do 500 cykli"
-        ]
-      ],
-      "badges": [
-        "Od 1 szt."
-      ],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
           "id": 17,
-          "sku": "PK-GD08-BIA",
-          "label": "biały",
-          "price_gr": 3900,
-          "stock": 140,
+          "sku": "PK-PL-DRK-A1",
+          "label": "A1 · 594 × 841 mm",
+          "price_gr": 5490,
+          "stock": null,
           "available": true
         },
         {
           "id": 18,
-          "sku": "PK-GD08-CZA",
-          "label": "czarny z białym polem",
-          "price_gr": 4400,
-          "stock": 64,
-          "available": true
-        },
-        {
-          "id": 19,
-          "sku": "PK-GD08-MAG",
-          "label": "biały, wnętrze magenta",
-          "price_gr": 4400,
-          "stock": 38,
-          "available": true
-        }
-      ],
-      "price_from_gr": 3900
-    },
-    {
-      "id": 9,
-      "slug": "kubek-termiczny-450",
-      "category": "gadzety-z-logo",
-      "name": "Kubek termiczny 450 ml",
-      "type": "physical",
-      "short": "Stal nierdzewna, podwójna ścianka, grawer laserowy.",
-      "description": "Kubek do auta i na spacer. Utrzymuje temperaturę napoju do 6 godzin, logo wygrawerowane laserem nie zetrze się nigdy.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 4,
-      "weight_g": 380,
-      "dims_cm": [
-        22,
-        10,
-        10
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "A",
-      "art": {
-        "shape": "thermo",
-        "tone": "ink"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/9292797/pexels-photo-9292797.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Kubek termiczny"
-        },
-        {
-          "src": "https://images.pexels.com/photos/4065905/pexels-photo-4065905.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Kubek w dłoniach"
-        }
-      ],
-      "specs": [
-        [
-          "Pojemność",
-          "450 ml"
-        ],
-        [
-          "Materiał",
-          "stal 304, podwójna ścianka"
-        ],
-        [
-          "Znakowanie",
-          "grawer laserowy"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 20,
-          "sku": "PK-GD09-GRA",
-          "label": "grafitowy",
-          "price_gr": 7900,
-          "stock": 6,
-          "available": true
-        },
-        {
-          "id": 21,
-          "sku": "PK-GD09-SRE",
-          "label": "srebrny",
-          "price_gr": 7900,
-          "stock": 22,
-          "available": true
-        }
-      ],
-      "price_from_gr": 7900
-    },
-    {
-      "id": 10,
-      "slug": "dlugopis-metalowy-grawer",
-      "category": "gadzety-z-logo",
-      "name": "Długopis metalowy z grawerem",
-      "type": "physical",
-      "short": "Aluminiowy korpus, niebieski wkład, grawer logo w cenie.",
-      "description": "Długopis, którego nikt nie wyrzuca: chłodny metal, płynny wkład i logo wygrawerowane laserem. Pakowany pojedynczo w woreczki.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 5,
-      "weight_g": 1200,
-      "dims_cm": [
-        20,
-        15,
-        8
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "A",
-      "art": {
-        "shape": "pen",
-        "tone": "cyan"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/210660/pexels-photo-210660.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Metalowy długopis na notesie"
-        },
-        {
-          "src": "https://images.pexels.com/photos/7822110/pexels-photo-7822110.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Długopis na biurku"
-        }
-      ],
-      "specs": [
-        [
-          "Korpus",
-          "aluminium anodowane"
-        ],
-        [
-          "Wkład",
-          "niebieski, typu Parker"
-        ],
-        [
-          "Znakowanie",
-          "grawer laserowy 1 strona"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 22,
-          "sku": "PK-GD10-10",
-          "label": "10 szt.",
-          "price_gr": 9900,
-          "stock": 500,
-          "available": true
-        },
-        {
-          "id": 23,
-          "sku": "PK-GD10-50",
-          "label": "50 szt.",
-          "price_gr": 34900,
-          "stock": 500,
-          "available": true
-        },
-        {
-          "id": 24,
-          "sku": "PK-GD10-100",
-          "label": "100 szt.",
-          "price_gr": 59900,
-          "stock": 500,
-          "available": true
-        }
-      ],
-      "price_from_gr": 9900
-    },
-    {
-      "id": 11,
-      "slug": "smycze-z-nadrukiem",
-      "category": "gadzety-z-logo",
-      "name": "Smycze z nadrukiem",
-      "type": "physical",
-      "short": "Taśma 20 mm, nadruk sublimacyjny, karabińczyk i zapięcie bezpieczne.",
-      "description": "Smycze na konferencje i dla zespołu. Nadruk sublimacyjny w pełnym kolorze na całej długości taśmy, zapięcie bezpieczne rozpina się przy szarpnięciu.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 7,
-      "weight_g": 1500,
-      "dims_cm": [
-        25,
-        20,
-        8
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "A",
-      "art": {
-        "shape": "lanyard",
-        "tone": "magenta"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/8761304/pexels-photo-8761304.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Smycz z identyfikatorem"
-        },
-        {
-          "src": "https://images.pexels.com/photos/8761741/pexels-photo-8761741.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Smycze z nadrukiem"
-        }
-      ],
-      "specs": [
-        [
-          "Szerokość",
-          "20 mm"
-        ],
-        [
-          "Długość",
-          "90 cm w obwodzie"
-        ],
-        [
-          "Nadruk",
-          "sublimacja 2-str."
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 25,
-          "sku": "PK-GD11-50",
-          "label": "50 szt.",
-          "price_gr": 29900,
-          "stock": 999,
-          "available": true
-        },
-        {
-          "id": 26,
-          "sku": "PK-GD11-100",
-          "label": "100 szt.",
-          "price_gr": 44900,
-          "stock": 999,
-          "available": true
-        }
-      ],
-      "price_from_gr": 29900
-    },
-    {
-      "id": 12,
-      "slug": "torba-bawelniana-z-nadrukiem",
-      "category": "gadzety-z-logo",
-      "name": "Torba bawełniana z nadrukiem",
-      "type": "physical",
-      "short": "Bawełna 140 g/m², długie uchwyty, sitodruk 1 kolor.",
-      "description": "Torba na zakupy, targi i jako opakowanie zamówień. Mocna bawełna 140 g/m² i nadruk sitodrukiem, który przetrwa pranie.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 7,
-      "weight_g": 3200,
-      "dims_cm": [
-        40,
-        30,
-        10
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "B",
-      "art": {
-        "shape": "tote",
-        "tone": "yellow"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/1214212/pexels-photo-1214212.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Bawełniana torba na zakupy"
-        },
-        {
-          "src": "https://images.pexels.com/photos/8148587/pexels-photo-8148587.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Torba z bawełny"
-        }
-      ],
-      "specs": [
-        [
-          "Wymiar",
-          "38 × 42 cm"
-        ],
-        [
-          "Materiał",
-          "bawełna 140 g/m², kolor ecru"
-        ],
-        [
-          "Nadruk",
-          "sitodruk 1 kolor, 1 strona"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 27,
-          "sku": "PK-GD12-25",
-          "label": "25 szt.",
-          "price_gr": 34900,
-          "stock": 400,
-          "available": true
-        },
-        {
-          "id": 28,
-          "sku": "PK-GD12-50",
-          "label": "50 szt.",
-          "price_gr": 59900,
-          "stock": 400,
-          "available": true
-        }
-      ],
-      "price_from_gr": 34900
-    },
-    {
-      "id": 13,
-      "slug": "koszulka-z-logo",
-      "category": "gadzety-z-logo",
-      "name": "Koszulka z logo",
-      "type": "physical",
-      "short": "Bawełna 180 g/m², nadruk DTF na piersi lub plecach.",
-      "description": "Koszulka dla zespołu, na event albo do sklepu. Zamawiasz dowolną liczbę sztuk w różnych rozmiarach — każdy rozmiar to osobna pozycja w koszyku.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 5,
-      "weight_g": 220,
-      "dims_cm": [
-        30,
-        25,
-        3
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "A",
-      "art": {
-        "shape": "tshirt",
-        "tone": "ink"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Koszulka bawełniana"
-        },
-        {
-          "src": "https://images.pexels.com/photos/4066293/pexels-photo-4066293.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Złożone koszulki"
-        }
-      ],
-      "specs": [
-        [
-          "Materiał",
-          "100% bawełna czesana 180 g/m²"
-        ],
-        [
-          "Nadruk",
-          "DTF do A4"
-        ],
-        [
-          "Kolor",
-          "czarny"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 29,
-          "sku": "PK-GD13-S",
-          "label": "S",
-          "price_gr": 6900,
-          "stock": 18,
-          "available": true
-        },
-        {
-          "id": 30,
-          "sku": "PK-GD13-M",
-          "label": "M",
-          "price_gr": 6900,
-          "stock": 31,
-          "available": true
-        },
-        {
-          "id": 31,
-          "sku": "PK-GD13-L",
-          "label": "L",
-          "price_gr": 6900,
-          "stock": 27,
-          "available": true
-        },
-        {
-          "id": 32,
-          "sku": "PK-GD13-XL",
-          "label": "XL",
-          "price_gr": 6900,
-          "stock": 9,
-          "available": true
-        },
-        {
-          "id": 33,
-          "sku": "PK-GD13-XXL",
-          "label": "XXL",
-          "price_gr": 7400,
-          "stock": 0,
-          "available": false
-        }
-      ],
-      "price_from_gr": 6900
-    },
-    {
-      "id": 14,
-      "slug": "notes-a5-z-logo",
-      "category": "gadzety-z-logo",
-      "name": "Notes A5 z logo",
-      "type": "physical",
-      "short": "50 kartek w kratkę, okładka 300 g/m², klejony grzbiet.",
-      "description": "Notes na spotkania z klientami. Każda kartka z delikatnym logo w stopce, okładka z Twoim projektem.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 6,
-      "weight_g": 4800,
-      "dims_cm": [
-        32,
-        23,
-        12
-      ],
-      "shipping_class": "paczkomat",
-      "parcel_size": "B",
-      "art": {
-        "shape": "notebook",
-        "tone": "cyan"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/8586182/pexels-photo-8586182.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Notes A5 z długopisem"
-        },
-        {
-          "src": "https://images.pexels.com/photos/34587/pexels-photo-34587.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Otwarty notes na biurku"
-        }
-      ],
-      "specs": [
-        [
-          "Format",
-          "A5"
-        ],
-        [
-          "Środek",
-          "50 kartek, offset 80 g/m², kratka"
-        ],
-        [
-          "Oprawa",
-          "klejona, okładka 300 g/m²"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 34,
-          "sku": "PK-GD14-25",
-          "label": "25 szt.",
-          "price_gr": 39900,
-          "stock": 999,
-          "available": true
-        },
-        {
-          "id": 35,
-          "sku": "PK-GD14-50",
-          "label": "50 szt.",
-          "price_gr": 69900,
-          "stock": 999,
-          "available": true
-        }
-      ],
-      "price_from_gr": 39900
-    },
-    {
-      "id": 15,
-      "slug": "roll-up-85x200",
-      "category": "systemy-wystawiennicze",
-      "name": "Roll-up 85 × 200 cm",
-      "type": "physical",
-      "short": "Kaseta aluminiowa, wydruk na blockoucie, torba w zestawie.",
-      "description": "Podstawowy roll-up na targi i do recepcji. Rozkładasz go w 30 sekund, wydruk na nieprzezroczystym blockoucie nie prześwituje pod światło.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 4,
-      "weight_g": 3600,
-      "dims_cm": [
-        92,
-        14,
-        12
-      ],
-      "shipping_class": "kurier",
-      "parcel_size": null,
-      "art": {
-        "shape": "rollup",
-        "tone": "magenta"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/7648057/pexels-photo-7648057.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Stoisko rejestracyjne na konferencji"
-        },
-        {
-          "src": "https://images.pexels.com/photos/29708258/pexels-photo-29708258.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Konferencja ze sceną"
-        }
-      ],
-      "specs": [
-        [
-          "Wymiar grafiki",
-          "850 × 2000 mm"
-        ],
-        [
-          "Materiał",
-          "blockout 440 g/m²"
-        ],
-        [
-          "W zestawie",
-          "kaseta, maszt, torba"
-        ]
-      ],
-      "badges": [
-        "Bestseller"
-      ],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 36,
-          "sku": "PK-SW15-STD",
-          "label": "standard",
-          "price_gr": 24900,
-          "stock": 45,
-          "available": true
-        }
-      ],
-      "price_from_gr": 24900
-    },
-    {
-      "id": 16,
-      "slug": "roll-up-premium-100x200",
-      "category": "systemy-wystawiennicze",
-      "name": "Roll-up Premium 100 × 200 cm",
-      "type": "physical",
-      "short": "Szeroka kaseta z regulowanymi stopkami i wymiennym wkładem.",
-      "description": "Roll-up do częstego używania: stabilna szeroka kaseta, regulowane stopki na nierówną podłogę i możliwość wymiany grafiki bez kupowania nowej konstrukcji.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 5,
-      "weight_g": 5200,
-      "dims_cm": [
-        108,
-        16,
-        14
-      ],
-      "shipping_class": "kurier",
-      "parcel_size": null,
-      "art": {
-        "shape": "rollup",
-        "tone": "cyan"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/29708258/pexels-photo-29708258.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Konferencja ze sceną i ekranem"
-        },
-        {
-          "src": "https://images.pexels.com/photos/7648057/pexels-photo-7648057.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Stoisko na konferencji"
-        }
-      ],
-      "specs": [
-        [
-          "Wymiar grafiki",
-          "1000 × 2000 mm"
-        ],
-        [
-          "Kaseta",
-          "aluminium, regulowane stopki"
-        ],
-        [
-          "Wymiana grafiki",
-          "tak, kaseta z listwą zatrzaskową"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 37,
-          "sku": "PK-SW16-PRE",
-          "label": "premium",
-          "price_gr": 38900,
-          "stock": 17,
-          "available": true
-        }
-      ],
-      "price_from_gr": 38900
-    },
-    {
-      "id": 17,
-      "slug": "scianka-tekstylna-3x225",
-      "category": "systemy-wystawiennicze",
-      "name": "Ścianka tekstylna 3 × 2,25 m",
-      "type": "physical",
-      "short": "Stelaż łamany i grafika na tkaninie z silikonowym rantem.",
-      "description": "Tło do zdjęć, konferencji prasowej albo stoiska. Grafika na tkaninie nie odbija światła lamp, a stelaż składa się do torby na kółkach.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 7,
-      "weight_g": 14500,
-      "dims_cm": [
-        115,
-        35,
-        30
-      ],
-      "shipping_class": "kurier",
-      "parcel_size": null,
-      "art": {
-        "shape": "wall",
-        "tone": "ink"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/17056964/pexels-photo-17056964.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Sala eventowa z dużym ekranem"
-        },
-        {
-          "src": "https://images.pexels.com/photos/8344905/pexels-photo-8344905.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Uczestnicy konferencji"
-        }
-      ],
-      "specs": [
-        [
-          "Wymiar",
-          "3000 × 2250 mm"
-        ],
-        [
-          "Grafika",
-          "tkanina 230 g/m², rant silikonowy"
-        ],
-        [
-          "Transport",
-          "torba na kółkach"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 38,
-          "sku": "PK-SW17-STD",
-          "label": "jednostronna",
-          "price_gr": 189000,
-          "stock": 5,
-          "available": true
-        }
-      ],
-      "price_from_gr": 189000
-    },
-    {
-      "id": 18,
-      "slug": "flaga-reklamowa-beach-flag",
-      "category": "systemy-wystawiennicze",
-      "name": "Flaga reklamowa beach flag",
-      "type": "physical",
-      "short": "Maszt z włókna szklanego i podstawa krzyżakowa, flaga w kształcie skrzydła.",
-      "description": "Widoczna z daleka flaga przed sklepem lub na festynie. Elastyczny maszt pracuje na wietrze zamiast się łamać.",
-      "vat_rate": 23,
-      "personalizable": true,
-      "lead_time_days": 6,
-      "weight_g": 4300,
-      "dims_cm": [
-        130,
-        15,
-        15
-      ],
-      "shipping_class": "kurier",
-      "parcel_size": null,
-      "art": {
-        "shape": "flag",
-        "tone": "yellow"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/36624122/pexels-photo-36624122.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Stoisko z flagami na plenerowym festynie"
-        },
-        {
-          "src": "https://images.pexels.com/photos/7648057/pexels-photo-7648057.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Stoisko eventowe"
-        }
-      ],
-      "specs": [
-        [
-          "Kształt",
-          "skrzydło"
-        ],
-        [
-          "Materiał",
-          "poliester 115 g/m²"
-        ],
-        [
-          "Podstawa",
-          "krzyżak + obciążnik na wodę"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": {
-        "name": "PromoKuźnia (dane przykładowe — sklep demonstracyjny)",
-        "address": "ul. Kowalska 12, 50-000 Wrocław",
-        "contact": "bezpieczenstwo@promokuznia.pl"
-      },
-      "variants": [
-        {
-          "id": 39,
-          "sku": "PK-SW18-M",
-          "label": "M — 2,8 m",
-          "price_gr": 27900,
-          "stock": 12,
-          "available": true
-        },
-        {
-          "id": 40,
-          "sku": "PK-SW18-L",
-          "label": "L — 3,6 m",
-          "price_gr": 34900,
-          "stock": 0,
-          "available": false
-        }
-      ],
-      "price_from_gr": 27900
-    },
-    {
-      "id": 19,
-      "slug": "pakiet-30-postow-instagram",
-      "category": "produkty-cyfrowe",
-      "name": "Pakiet 30 postów na Instagram",
-      "type": "digital",
-      "short": "Edytowalne szablony Canva i PSD, 1080 × 1350 px.",
-      "description": "Miesiąc publikacji gotowy w jeden wieczór. Trzydzieści układów postów i dziesięć okładek relacji, w których podmieniasz kolory, zdjęcia i teksty. Link do pobrania przychodzi mailem zaraz po płatności.",
-      "vat_rate": 23,
-      "personalizable": false,
-      "lead_time_days": 0,
-      "weight_g": null,
-      "dims_cm": null,
-      "shipping_class": null,
-      "parcel_size": null,
-      "art": {
-        "shape": "grid",
-        "tone": "magenta"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/5052877/pexels-photo-5052877.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Polubienie zdjęcia na Instagramie w telefonie"
-        },
-        {
-          "src": "https://images.pexels.com/photos/7662057/pexels-photo-7662057.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Telefon w dłoni"
-        }
-      ],
-      "specs": [
-        [
-          "Format",
-          "Canva + PSD"
-        ],
-        [
-          "Rozmiar",
-          "1080 × 1350 px"
-        ],
-        [
-          "Licencja",
-          "1 firma, użytek komercyjny"
-        ],
-        [
-          "Dostawa",
-          "link ważny 7 dni, 5 pobrań"
-        ]
-      ],
-      "badges": [
-        "Promocja"
-      ],
-      "compare_at_gr": 9900,
-      "lowest_30d_gr": 8900,
-      "gpsr": null,
-      "variants": [
-        {
-          "id": 41,
-          "sku": "PK-CY19-STD",
-          "label": "licencja firmowa",
-          "price_gr": 7900,
+          "sku": "PK-PL-DRK-A0",
+          "label": "A0 · 841 × 1189 mm",
+          "price_gr": 8990,
           "stock": null,
           "available": true
         }
       ],
-      "price_from_gr": 7900
-    },
-    {
-      "id": 20,
-      "slug": "szablon-oferty-handlowej",
-      "category": "produkty-cyfrowe",
-      "name": "Szablon oferty handlowej",
-      "type": "digital",
-      "short": "12-stronicowa oferta w Canva, Google Docs i Word.",
-      "description": "Szkielet oferty, który prowadzi klienta od problemu do ceny: okładka, o nas, zakres, harmonogram, cennik w trzech pakietach i strona z referencjami.",
-      "vat_rate": 23,
-      "personalizable": false,
-      "lead_time_days": 0,
-      "weight_g": null,
-      "dims_cm": null,
-      "shipping_class": null,
-      "parcel_size": null,
-      "art": {
-        "shape": "doc",
-        "tone": "cyan"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/8730987/pexels-photo-8730987.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Podpisywanie dokumentu"
-        },
-        {
-          "src": "https://images.pexels.com/photos/5387258/pexels-photo-5387258.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Podpisanie umowy"
-        }
-      ],
-      "specs": [
-        [
-          "Format",
-          "Canva, Google Docs, DOCX"
-        ],
-        [
-          "Stron",
-          "12"
-        ],
-        [
-          "Dostawa",
-          "link ważny 7 dni, 5 pobrań"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": null,
-      "variants": [
-        {
-          "id": 42,
-          "sku": "PK-CY20-STD",
-          "label": "licencja firmowa",
-          "price_gr": 4900,
-          "stock": null,
-          "available": true
-        }
-      ],
-      "price_from_gr": 4900
-    },
-    {
-      "id": 21,
-      "slug": "brandbook-kit",
-      "category": "produkty-cyfrowe",
-      "name": "Brandbook Kit",
-      "type": "digital",
-      "short": "Szablon księgi znaku: logo, kolory, typografia, przykłady użycia.",
-      "description": "Uporządkuj markę w 20 stronach. Szablon prowadzi przez wersje logo, pola ochronne, paletę z wartościami CMYK, RGB i HEX oraz przykłady na wizytówce, ulotce i w social mediach.",
-      "vat_rate": 23,
-      "personalizable": false,
-      "lead_time_days": 0,
-      "weight_g": null,
-      "dims_cm": null,
-      "shipping_class": null,
-      "parcel_size": null,
-      "art": {
-        "shape": "book",
-        "tone": "ink"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/6583363/pexels-photo-6583363.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Wachlarz próbek kolorów w dłoni"
-        },
-        {
-          "src": "https://images.pexels.com/photos/9421350/pexels-photo-9421350.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Wzornik kolorów Pantone"
-        }
-      ],
-      "specs": [
-        [
-          "Format",
-          "Figma + PDF"
-        ],
-        [
-          "Stron",
-          "20"
-        ],
-        [
-          "Dostawa",
-          "link ważny 7 dni, 5 pobrań"
-        ]
-      ],
-      "badges": [
-        "Nowość"
-      ],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": null,
-      "variants": [
-        {
-          "id": 43,
-          "sku": "PK-CY21-STD",
-          "label": "licencja firmowa",
-          "price_gr": 14900,
-          "stock": null,
-          "available": true
-        }
-      ],
-      "price_from_gr": 14900
-    },
-    {
-      "id": 22,
-      "slug": "kalendarz-tresci-2027",
-      "category": "produkty-cyfrowe",
-      "name": "Kalendarz treści 2027",
-      "type": "digital",
-      "short": "Planer publikacji w Notion i Excelu z polskimi świętami i okazjami.",
-      "description": "Gotowy plan na cały rok: święta, dni branżowe i okazje sprzedażowe w Polsce, kolumny na kanał, format i status. Wystarczy wpisać swoje tematy.",
-      "vat_rate": 23,
-      "personalizable": false,
-      "lead_time_days": 0,
-      "weight_g": null,
-      "dims_cm": null,
-      "shipping_class": null,
-      "parcel_size": null,
-      "art": {
-        "shape": "calendar",
-        "tone": "yellow"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/29996969/pexels-photo-29996969.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Kolorowy planer i kalendarz na biurku"
-        },
-        {
-          "src": "https://images.pexels.com/photos/15556833/pexels-photo-15556833.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Kalendarz na biurku"
-        }
-      ],
-      "specs": [
-        [
-          "Format",
-          "Notion + XLSX"
-        ],
-        [
-          "Zakres",
-          "styczeń–grudzień 2027"
-        ],
-        [
-          "Dostawa",
-          "link ważny 7 dni, 5 pobrań"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": null,
-      "variants": [
-        {
-          "id": 44,
-          "sku": "PK-CY22-STD",
-          "label": "licencja firmowa",
-          "price_gr": 3900,
-          "stock": null,
-          "available": true
-        }
-      ],
-      "price_from_gr": 3900
-    },
-    {
-      "id": 23,
-      "slug": "audyt-profilu-google",
-      "category": "uslugi",
-      "name": "Audyt profilu Google Firmy",
-      "type": "service",
-      "short": "Raport PDF z listą poprawek i 15-minutowe omówienie online.",
-      "description": "Sprawdzamy kategorie, opis, zdjęcia, opinie i pozycję w mapach na 10 Twoich fraz. Dostajesz raport z poprawkami uszeregowanymi od najważniejszej.",
-      "vat_rate": 23,
-      "personalizable": false,
-      "lead_time_days": 5,
-      "weight_g": null,
-      "dims_cm": null,
-      "shipping_class": null,
-      "parcel_size": null,
-      "art": {
-        "shape": "pin",
-        "tone": "cyan"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/35969/pexels-photo-35969.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Mapa w aplikacji na smartfonie"
-        },
-        {
-          "src": "https://images.pexels.com/photos/5226497/pexels-photo-5226497.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Mapa na smartfonie"
-        }
-      ],
-      "specs": [
-        [
-          "Realizacja",
-          "5 dni roboczych"
-        ],
-        [
-          "Efekt",
-          "raport PDF + rozmowa 15 min"
-        ],
-        [
-          "Potrzebne",
-          "dostęp do profilu jako menedżer"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": null,
-      "variants": [
-        {
-          "id": 45,
-          "sku": "PK-US23-STD",
-          "label": "audyt",
-          "price_gr": 29900,
-          "stock": null,
-          "available": true
-        }
-      ],
-      "price_from_gr": 29900
-    },
-    {
-      "id": 24,
-      "slug": "projekt-ulotki",
-      "category": "uslugi",
-      "name": "Projekt ulotki",
-      "type": "service",
-      "short": "Projekt A5 lub DL z dwiema rundami poprawek, plik gotowy do druku.",
-      "description": "Grafik projektuje ulotkę na podstawie Twoich tekstów i logo. Dostajesz PDF do druku i PNG do internetu. Przy zamówieniu druku w PromoKuźni plik od razu trafia do produkcji.",
-      "vat_rate": 23,
-      "personalizable": false,
-      "lead_time_days": 4,
-      "weight_g": null,
-      "dims_cm": null,
-      "shipping_class": null,
-      "parcel_size": null,
-      "art": {
-        "shape": "pentool",
-        "tone": "yellow"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/30693630/pexels-photo-30693630.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Projektowanie na tablecie graficznym"
-        },
-        {
-          "src": "https://images.pexels.com/photos/16284691/pexels-photo-16284691.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Pracownia grafika"
-        }
-      ],
-      "specs": [
-        [
-          "Realizacja",
-          "4 dni robocze"
-        ],
-        [
-          "Poprawki",
-          "2 rundy"
-        ],
-        [
-          "Pliki",
-          "PDF do druku + PNG"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": null,
-      "variants": [
-        {
-          "id": 46,
-          "sku": "PK-US24-A5",
-          "label": "ulotka A5",
-          "price_gr": 24900,
-          "stock": null,
-          "available": true
-        },
-        {
-          "id": 47,
-          "sku": "PK-US24-DL",
-          "label": "ulotka DL składana",
-          "price_gr": 34900,
-          "stock": null,
-          "available": true
-        }
-      ],
-      "price_from_gr": 24900
-    },
-    {
-      "id": 25,
-      "slug": "projekt-logo",
-      "category": "uslugi",
-      "name": "Projekt logo w 3 wariantach",
-      "type": "service",
-      "short": "Trzy kierunki do wyboru, dopracowanie wybranego i pliki w każdym formacie.",
-      "description": "Krótka ankieta o firmie, trzy różne propozycje logo i dopracowanie tej, którą wybierzesz. Na koniec dostajesz SVG, PDF, PNG oraz wersje kolorystyczne CMYK i RGB.",
-      "vat_rate": 23,
-      "personalizable": false,
-      "lead_time_days": 10,
-      "weight_g": null,
-      "dims_cm": null,
-      "shipping_class": null,
-      "parcel_size": null,
-      "art": {
-        "shape": "pentool",
-        "tone": "magenta"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/6615229/pexels-photo-6615229.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Szkice w szkicowniku"
-        },
-        {
-          "src": "https://images.pexels.com/photos/16284691/pexels-photo-16284691.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Grafik przy pracy"
-        }
-      ],
-      "specs": [
-        [
-          "Realizacja",
-          "10 dni roboczych"
-        ],
-        [
-          "Propozycje",
-          "3 kierunki"
-        ],
-        [
-          "Pliki",
-          "SVG, PDF, PNG, CMYK i RGB"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": null,
-      "variants": [
-        {
-          "id": 48,
-          "sku": "PK-US25-STD",
-          "label": "pakiet podstawowy",
-          "price_gr": 89900,
-          "stock": null,
-          "available": true
-        }
-      ],
-      "price_from_gr": 89900
-    },
-    {
-      "id": 26,
-      "slug": "karta-podarunkowa",
-      "category": "karty-podarunkowe",
-      "name": "Karta podarunkowa",
-      "type": "gift_card",
-      "short": "Kod do wykorzystania w koszyku, ważny 12 miesięcy, wysyłany mailem.",
-      "description": "Prezent dla kogoś, kto prowadzi firmę. Kod przychodzi mailem jako elegancki PDF do wydruku. Można go wykorzystać w częściach, saldo widać w koszyku.",
-      "vat_rate": null,
-      "personalizable": false,
-      "lead_time_days": 0,
-      "weight_g": null,
-      "dims_cm": null,
-      "shipping_class": null,
-      "parcel_size": null,
-      "art": {
-        "shape": "gift",
-        "tone": "magenta"
-      },
-      "images": [
-        {
-          "src": "https://images.pexels.com/photos/5872351/pexels-photo-5872351.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Czarne pudełko prezentowe z białą wstążką"
-        },
-        {
-          "src": "https://images.pexels.com/photos/8014845/pexels-photo-8014845.jpeg?auto=compress&cs=tinysrgb&w=1200",
-          "alt": "Prezent ze wstążką"
-        }
-      ],
-      "specs": [
-        [
-          "Ważność",
-          "12 miesięcy od zakupu"
-        ],
-        [
-          "Wykorzystanie",
-          "w częściach, na dowolne produkty"
-        ],
-        [
-          "Dostawa",
-          "e-mail z PDF"
-        ]
-      ],
-      "badges": [],
-      "compare_at_gr": null,
-      "lowest_30d_gr": null,
-      "gpsr": null,
-      "variants": [
-        {
-          "id": 49,
-          "sku": "PK-KP26-100",
-          "label": "100 zł",
-          "price_gr": 10000,
-          "stock": null,
-          "available": true
-        },
-        {
-          "id": 50,
-          "sku": "PK-KP26-200",
-          "label": "200 zł",
-          "price_gr": 20000,
-          "stock": null,
-          "available": true
-        },
-        {
-          "id": 51,
-          "sku": "PK-KP26-500",
-          "label": "500 zł",
-          "price_gr": 50000,
-          "stock": null,
-          "available": true
-        }
-      ],
-      "price_from_gr": 10000
+      "price_from_gr": 690
     }
   ]
 }

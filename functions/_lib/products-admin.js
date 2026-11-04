@@ -6,12 +6,14 @@ export const TYPES = ['physical', 'digital', 'service', 'gift_card'];
 export const VAT_RATES = [23, 8, 5, 0];
 export const SKU_PREFIX = {
   'druk-firmowy': 'DR', 'gadzety-z-logo': 'GD', 'systemy-wystawiennicze': 'SW',
-  'produkty-cyfrowe': 'CY', 'uslugi': 'US', 'karty-podarunkowe': 'KP'
+  'produkty-cyfrowe': 'CY', 'uslugi': 'US', 'karty-podarunkowe': 'KP',
+  'wizytowki': 'WZ', 'plakaty': 'PL'
 };
 // ilustracja zastępcza, gdy zdjęcie się nie wczyta
 const ART_BY_CATEGORY = {
   'druk-firmowy': 'flyer', 'gadzety-z-logo': 'mug', 'systemy-wystawiennicze': 'rollup',
-  'produkty-cyfrowe': 'grid', 'uslugi': 'pentool', 'karty-podarunkowe': 'gift'
+  'produkty-cyfrowe': 'grid', 'uslugi': 'pentool', 'karty-podarunkowe': 'gift',
+  'wizytowki': 'card', 'plakaty': 'flyer'
 };
 const GPSR = {
   name: 'PromoKuźnia (dane przykładowe — sklep demonstracyjny)',

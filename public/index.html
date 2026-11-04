@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PromoKuźnia</title>
-<meta name="description" content="PromoKuźnia — druk firmowy, gadżety z logo, roll-upy, szablony i usługi marketingowe dla małych firm.">
+<meta name="description" content="PromoKuźnia — wizytówki oraz projekt i druk plakatów od A5 do A0. Podgląd przed drukiem, wysyłka InPost.">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@75..150,500..900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="preload" href="/fonts/anybody-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/figtree-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="modulepreload" href="/assets/pricing.js">
+<link rel="modulepreload" href="/assets/store.js">
+<link rel="modulepreload" href="/assets/legal.js">
+<link rel="preconnect" href="https://images.pexels.com">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
@@ -25,7 +28,7 @@
     </a>
     <form class="search" id="search-form" role="search">
       <label class="sr-only" for="search-input">Szukaj produktów</label>
-      <input id="search-input" type="search" placeholder="Szukaj: wizytówki, kubek, roll-up…" autocomplete="off">
+      <input id="search-input" type="search" placeholder="Szukaj: wizytówki, plakat A2…" autocomplete="off">
     </form>
     <a class="account-link" href="#konto" id="account-link">Zaloguj się</a>
     <a class="cart-link" href="#koszyk" id="cart-link">
@@ -45,17 +48,16 @@
   <div class="wrap footer-grid">
     <div class="footer-brand">
       <p class="brand-name">Promo<b>Kuźnia</b></p>
-      <p class="muted">Druk firmowy, gadżety z logo, systemy wystawiennicze i szablony dla małych firm. Wgrywasz plik — akceptujesz podgląd — dostajesz paczkę.</p>
+      <p class="muted">Wizytówki oraz projekt i druk plakatów od A5 do A0. Wgrywasz plik — akceptujesz podgląd — dostajesz paczkę.</p>
       <p class="footer-pay"><span>BLIK</span><span>Karta</span><span>Przelewy24</span><span>InPost</span></p>
     </div>
     <div>
       <p class="eyebrow">Sklep</p>
       <ul class="plain">
-        <li><a href="#kategoria-druk-firmowy">Druk firmowy</a></li>
-        <li><a href="#kategoria-gadzety-z-logo">Gadżety z logo</a></li>
-        <li><a href="#kategoria-systemy-wystawiennicze">Systemy wystawiennicze</a></li>
-        <li><a href="#kategoria-produkty-cyfrowe">Produkty cyfrowe</a></li>
-        <li><a href="#kategoria-uslugi">Usługi</a></li>
+        <li><a href="#kategoria-wizytowki">Wizytówki</a></li>
+        <li><a href="#kategoria-plakaty">Plakaty A5–A0</a></li>
+        <li><a href="#p-projekt-plakatu">Projekt plakatu</a></li>
+        <li><a href="#promocje">Promocje</a></li>
       </ul>
     </div>
     <div>
