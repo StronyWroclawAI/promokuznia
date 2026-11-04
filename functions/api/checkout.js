@@ -4,6 +4,8 @@ import { createOrderFromCart, releaseExpired, finalizeOrder, CheckoutError } fro
 import { startPayment, providerFor, orderUrl } from '../_lib/payments.js';
 import { computeTotals, shippingOptions, paymentOptions } from '../../public/assets/pricing.js';
 import { notifyOrder, later } from '../_lib/mail.js';
+import { checkPoint } from '../_lib/inpost.js';
+import { rateLimit, clientIp, verifyTurnstile, turnstileFailed } from '../_lib/guard.js';
 
 // GET /api/checkout?shipping_method=…&payment_method=…
 // Wycena koszyka dla wybranej dostawy i płatności + które bramki działają (symulator, gdy brak kluczy).
@@ -19,6 +21,9 @@ export async function onRequestGet(context) {
   return json({
     demo: env.SHOP_MODE === 'demo',
     providers,
+    // token Geowidgetu jest publiczny (InPost wiąże go z domeną sklepu)
+    turnstile_site_key: env.TURNSTILE_SITE_KEY || null,
+    inpost: { geowidget_token: env.INPOST_GEOWIDGET_TOKEN || null, sandbox: env.INPOST_SANDBOX !== '0' },
     cart: view,
     totals: computeTotals(view.lines, coupon, opts),
     shipping_options: shippingOptions(view.lines),
@@ -33,8 +38,21 @@ export async function onRequestPost(context) {
   const body = await readJson(request, 8192);
   if (!body) return problem(400, 'Nieprawidłowe dane żądania.');
 
+  const ip = clientIp(request);
+  const blocked = await rateLimit(env, `checkout:ip:${ip}`, 20, 3600);
+  if (blocked) return blocked;
+  // gość musi przejść Turnstile; zalogowany klient — nie
+  if (!context.data.customer && !(await verifyTurnstile(env, body.cf_turnstile, ip))) return turnstileFailed();
+
   if (body.payment_method && !providerFor(env, body.payment_method)) {
     return problem(400, 'Ta metoda płatności jest chwilowo niedostępna. Wybierz inną.', { field: 'payment_method' });
+  }
+
+  // Paczkomat musi istnieć i działać (publiczne API punktów InPost; gdy nie odpowiada — przepuszczamy)
+  if (body.shipping_method === 'paczkomat' && /^[A-Za-z]{3}\d{2,3}[A-Za-z]{1,2}$/.test(String(body.locker_code ?? '').trim())) {
+    const point = await checkPoint(env, String(body.locker_code).trim().toUpperCase());
+    if (point && !point.exists) return problem(400, 'Nie ma Paczkomatu o takim kodzie. Sprawdź kod albo wybierz punkt na mapie.', { field: 'locker_code' });
+    if (point && !point.operating) return problem(400, 'Ten Paczkomat jest chwilowo nieczynny. Wybierz inny.', { field: 'locker_code' });
   }
 
   await releaseExpired(db);

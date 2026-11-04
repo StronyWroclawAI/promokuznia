@@ -15,10 +15,13 @@ ADMIN_EMAILS=twoj@email.pl
 # Etap 5 — wysyłki
 INPOST_API_TOKEN=
 INPOST_ORGANIZATION_ID=
-INPOST_GEOWIDGET_TOKEN=
+INPOST_GEOWIDGET_TOKEN=          # token mapy dla domeny sklepu (Manager Paczek → API → Geowidget)
+INPOST_WEBHOOK_KEY=              # długi losowy ciąg (min. 24 znaki), część adresu webhooka
 # Etap 6 — maile i faktury
 RESEND_API_KEY=re_...           # bez klucza maile tylko trafiają do logu i dziennika w panelu
 FAKTUROWNIA_DOMAIN=
 FAKTUROWNIA_API_TOKEN=
 # Tylko lokalnie, do Etapu 6: link resetu hasła wraca w odpowiedzi API
 EXPOSE_RESET_LINKS=1
+# Etap 7 — Turnstile (opcjonalnie): sekret z Cloudflare → Turnstile; klucz publiczny w wrangler.toml
+# TURNSTILE_SECRET=

@@ -216,6 +216,25 @@ export const TEMPLATES = {
     };
   },
 
+  odstapienie_klient(d) {
+    const subject = `Przyjęliśmy odstąpienie od umowy — ${d.number}`;
+    const intro = 'Dziękujemy. Odeślij produkty w ciągu 14 dni. Pieniądze zwrócimy w ciągu 14 dni od dziś, najpóźniej po otrzymaniu paczki.';
+    return {
+      subject,
+      html: layout({ preheader: intro, title: 'Odstąpienie przyjęte', intro, body: box(`<b>Produkty:</b> ${esc(d.items)}${d.account ? `<br><b>Konto do zwrotu:</b> ${esc(d.account)}` : ''}`) }),
+      text: `${subject}\n\n${intro}\n\nProdukty: ${d.items}`
+    };
+  },
+
+  odstapienie_sklep(d) {
+    const subject = `Odstąpienie od umowy — ${d.number}`;
+    return {
+      subject,
+      html: layout({ preheader: d.items, title: subject, intro: 'Klient wysłał oświadczenie przez formularz. Termin na zwrot pieniędzy: 14 dni.', body: box(`${esc(d.items)}${d.account ? `<br>Konto: ${esc(d.account)}` : ''}${d.note ? `<br>Uwagi: ${esc(d.note)}` : ''}`, C.m), cta: { href: d.adminUrl, label: 'Otwórz zamówienie' } }),
+      text: `${subject}\n${d.items}\n${d.adminUrl}`
+    };
+  },
+
   dla_sklepu(o) {
     const subject = `Nowe zamówienie ${o.number} — ${zl(o.totals.total_gr)}`;
     const what = o.status === 'czeka_na_platnosc' ? 'Czeka na przelew.' : o.status === 'akceptacja_projektu' ? 'Do przygotowania podgląd projektu.' : o.payment_method === 'pobranie' ? 'Za pobraniem — do realizacji.' : 'Opłacone — do realizacji.';

@@ -1,6 +1,8 @@
 // Panel admina: uprawnienia i operacje na zamówieniach.
 import { finalizeOrder, cancelOrder, STATUS_LABEL } from './orders.js';
 import { stripeRefund } from './payments.js';
+import { activeShipment, suggestedParcel, parcelFromBody, createOrderShipment, syncShipment } from './shipping.js';
+import { inpostMode } from './inpost.js';
 import { nowIso } from './http.js';
 
 // Administratorzy = konta sklepu z e-mailem z listy ADMIN_EMAILS (sekret w Cloudflare, przecinki)
@@ -31,7 +33,7 @@ async function move(db, order, allowedFrom, to, note, extra = []) {
 const str = (v, max) => String(v ?? '').trim().slice(0, max);
 
 // Dostępne akcje dla zamówienia — front pokazuje tylko te przyciski
-export function availableActions(order, items, payment) {
+export function availableActions(order, items, payment, shipment = null, env = {}) {
   const a = [];
   const s = order.status;
   if (s === 'czeka_na_platnosc') {
@@ -39,10 +41,15 @@ export function availableActions(order, items, payment) {
     a.push('cancel');
   }
   if (s === 'akceptacja_projektu') a.push('approve_project', 'request_changes');
+  const inpostOrder = order.shipping_method === 'paczkomat' || order.shipping_method === 'kurier_inpost';
   if (s === 'w_realizacji') {
     if (order.shipping_method === 'brak') a.push('complete');
-    else a.push('ship');
+    else {
+      if (inpostOrder && !shipment && inpostMode(env)) a.push('create_shipment');
+      a.push('ship');
+    }
   }
+  if (shipment?.external_id && ['w_realizacji', 'wyslane'].includes(s)) a.push('refresh_shipment');
   if (s === 'wyslane') a.push('deliver');
   if (s === 'dostarczone') a.push('complete');
   const refundable = payment && ['oplacona', 'czesciowo_zwrocona'].includes(payment.status) && payment.amount_gr > payment.refunded_gr;
@@ -55,7 +62,8 @@ export async function runAction(env, order, action, body) {
   const db = env.DB;
   const { results: items } = await db.prepare('SELECT * FROM order_items WHERE order_id = ?').bind(order.id).all();
   const payment = await db.prepare('SELECT * FROM payments WHERE order_id = ? ORDER BY attempt DESC, id DESC LIMIT 1').bind(order.id).first();
-  if (!availableActions(order, items, payment).includes(action)) {
+  const shipment = await activeShipment(db, order.id);
+  if (!availableActions(order, items, payment, shipment, env).includes(action)) {
     throw new ActionError(409, 'Ta akcja nie jest dostępna dla zamówienia w obecnym stanie.');
   }
   const note = str(body.note, 500) || null;
@@ -88,11 +96,29 @@ export async function runAction(env, order, action, body) {
       ]);
       return 'Zapisano uwagi do projektu.';
     }
+    case 'create_shipment': {
+      const parcel = parcelFromBody(order, await suggestedParcel(db, order), body);
+      try {
+        const s = await createOrderShipment(env, order, parcel);
+        return { message: s.tracking_number ? `Przesyłka utworzona, numer ${s.tracking_number}. Pobierz etykietę.` : 'Przesyłka utworzona. Numer i etykieta pojawią się za chwilę — kliknij „Odśwież status”.', mails: [] };
+      } catch (err) {
+        throw new ActionError(502, String(err.message).replace(/^InPost: /, 'InPost odrzucił przesyłkę: '));
+      }
+    }
+    case 'refresh_shipment': {
+      try {
+        const r = await syncShipment(env, shipment, 'admin');
+        return { message: `Status InPost: ${r.label}.`, mails: r.mails };
+      } catch (err) {
+        throw new ActionError(502, err.message);
+      }
+    }
     case 'ship': {
       const pickup = order.shipping_method === 'odbior';
-      const tracking = str(body.tracking_number, 40).toUpperCase();
+      // przesyłka z InPost już ma numer — nie trzeba go przepisywać
+      const tracking = (str(body.tracking_number, 40) || shipment?.tracking_number || '').toUpperCase();
       if (!pickup && !/^[A-Z0-9-]{6,40}$/.test(tracking)) throw new ActionError(400, 'Podaj numer przesyłki z etykiety przewoźnika.');
-      const extra = pickup ? [] : [
+      const extra = pickup || shipment?.tracking_number === tracking ? [] : [
         db.prepare(`INSERT INTO shipments (order_id, carrier, service, tracking_number, status) VALUES (?, 'inpost', ?, ?, 'nadana')`)
           .bind(order.id, order.shipping_method === 'paczkomat' ? 'inpost_locker_standard' : 'inpost_courier_standard', tracking)
       ];

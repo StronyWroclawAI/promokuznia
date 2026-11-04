@@ -8,15 +8,15 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 const root = new URL('../', import.meta.url);
 const read = (p) => readFile(new URL(p, root), 'utf8');
 
-const [html, css, pricing, store, app, catalog] = await Promise.all([
+const [html, css, pricing, store, legal, app, catalog] = await Promise.all([
   read('public/index.html'), read('public/assets/style.css'),
-  read('public/assets/pricing.js'), read('public/assets/store.js'), read('public/assets/app.js'),
+  read('public/assets/pricing.js'), read('public/assets/store.js'), read('public/assets/legal.js'), read('public/assets/app.js'),
   read('public/data/catalog.json')
 ]);
 
 // najprostszy „bundler”: usuwa importy i słowo export — moduły są pisane tak, by nie kolidowały nazwami
 const strip = (js) => js.replace(/^import .*?;\s*$/gm, '').replace(/^export (?=(const|function|async function) )/gm, '');
-const js = [pricing, store, app].map(strip).join('\n');
+const js = [pricing, store, legal, app].map(strip).join('\n');
 
 // kody rabatowe tylko do podglądu — w prawdziwym sklepie sprawdza je serwer
 const demoCoupons = [

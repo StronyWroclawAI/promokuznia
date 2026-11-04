@@ -24,3 +24,7 @@ SHOP_MODE = "demo"   # demo = pasek „Sklep demonstracyjny”, płatności tylk
 # Maile (Resend): nadawca z domeny zweryfikowanej w Resend; odpowiedzi klientów trafiają na MAIL_REPLY_TO
 MAIL_FROM = "PromoKuźnia <zamowienia@stronyaiwroclaw.pl>"
 MAIL_REPLY_TO = "stronyaiwroclaw@gmail.com"
+# InPost: "1" = sandbox (sandbox-api-shipx-pl, sandbox Geowidget), "0" = produkcja
+INPOST_SANDBOX = "1"
+# Cloudflare Turnstile (ochrona formularzy): klucz publiczny tutaj, TURNSTILE_SECRET jako sekret. Pusty = wyłączone.
+TURNSTILE_SITE_KEY = ""

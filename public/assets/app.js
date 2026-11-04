@@ -3,6 +3,7 @@
 // Koszyk i konto: apiStore przy działającym API, w podglądzie localStore (wszystko w przeglądarce).
 import { FREE_SHIPPING_GR, SHIPPING } from './pricing.js';
 import { apiStore, createLocalStore } from './store.js';
+import { LEGAL } from './legal.js';
 
 const view = document.getElementById('view');
 const catNav = document.getElementById('cat-nav');
@@ -604,6 +605,7 @@ function renderAccount() {
         <div class="field"><label for="reg-password">Hasło</label><input id="reg-password" name="password" type="password" autocomplete="new-password" minlength="10" required aria-describedby="reg-pw-hint"><small id="reg-pw-hint" class="muted">Co najmniej 10 znaków.</small></div>
         <label class="check"><input type="checkbox" name="marketing_consent" id="reg-consent"><span>Chcę dostawać e-mailem informacje o nowościach i promocjach PromoKuźni. Zgodę mogę wycofać w każdej chwili.</span></label>
         <p class="form-error" role="alert" hidden></p>
+        <div class="ts-slot" data-ts></div>
         <button class="btn" type="submit">Załóż konto</button>
       </form>
     </div>`;
@@ -644,7 +646,7 @@ async function submitForm(form, fn) {
   btn.disabled = true;
   form.querySelector('.form-error')?.setAttribute('hidden', '');
   try { await fn(Object.fromEntries(new FormData(form))); }
-  catch (err) { formError(form, err); }
+  catch (err) { formError(form, err); resetTurnstile(form); }
   finally { if (btn.isConnected) btn.disabled = false; }
 }
 
@@ -667,7 +669,7 @@ function bindAccount() {
   reg?.addEventListener('submit', (e) => {
     e.preventDefault();
     submitForm(reg, async (d) => afterAuth(
-      await store.register({ email: d.email, password: d.password, first_name: d.first_name, marketing_consent: d.marketing_consent === 'on' }),
+      await store.register({ email: d.email, password: d.password, first_name: d.first_name, marketing_consent: d.marketing_consent === 'on', cf_turnstile: d['cf-turnstile-response'] }),
       'Konto założone. Witamy w PromoKuźni.'));
   });
   document.getElementById('logout-btn')?.addEventListener('click', (e) => run(e.currentTarget, async () => {
@@ -696,6 +698,7 @@ function renderResetRequest() {
     <div class="field"><label for="reset-email">E-mail</label><input id="reset-email" name="email" type="email" autocomplete="email" required></div>
     <p class="form-error" role="alert" hidden></p>
     <div id="reset-result" role="status"></div>
+    <div class="ts-slot" data-ts></div>
     <button class="btn btn-primary" type="submit">Wyślij link</button>
     <a class="small" href="#konto">Wróć do logowania</a>
   </form>`;
@@ -705,7 +708,7 @@ function bindResetRequest() {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     submitForm(form, async (d) => {
-      const r = await state.store.resetRequest(d.email);
+      const r = await state.store.resetRequest(d.email, d['cf-turnstile-response']);
       document.getElementById('reset-result').innerHTML = `<p class="note">${esc(r.message)}</p>${r.dev_link
         ? `<p class="small">Tryb deweloperski: <a href="${esc(r.dev_link)}">otwórz link resetu</a></p>` : ''}`;
     });
@@ -824,7 +827,21 @@ async function bindCheckout() {
         </fieldset>
         <div class="co-grid">
           ${field('co-ship_name', 'Imię i nazwisko odbiorcy', `autocomplete="name" required value="${esc(c?.first_name ?? '')}"`)}
-          <div data-ship="paczkomat">${field('co-locker_code', 'Kod Paczkomatu', 'autocomplete="off" placeholder="np. WRO01M" maxlength="9" style="text-transform:uppercase"', 'Mapę Paczkomatów (InPost Geowidget) dodamy w Etapie 5. Na razie wpisz kod ręcznie.')}</div>
+          <div data-ship="paczkomat" class="locker">
+            <div class="locker-search">
+              <label for="lk-q">Znajdź Paczkomat</label>
+              <div class="locker-row">
+                <input id="lk-q" type="search" placeholder="Miasto, kod pocztowy albo kod punktu" autocomplete="off" enterkeyhint="search">
+                <button type="button" class="btn" id="lk-go">Szukaj</button>
+                <button type="button" class="btn" id="lk-geo" title="Paczkomaty w promieniu 5 km">Blisko mnie</button>
+              </div>
+            </div>
+            <div id="lk-results" class="lk-results" aria-live="polite"></div>
+            ${q.inpost?.geowidget_token ? '<button type="button" class="btn" id="locker-map-btn">Wybierz na mapie InPost</button>' : ''}
+            <p class="small locker-picked" id="locker-picked" hidden></p>
+            ${field('co-locker_code', 'Kod Paczkomatu', 'autocomplete="off" placeholder="np. WRO01M" maxlength="9" style="text-transform:uppercase"',
+              'Uzupełni się po wyborze z listy. Znasz kod? Wpisz go od razu.')}
+          </div>
         </div>
         <div class="co-grid" data-ship="kurier_inpost">
           ${field('co-ship_street', 'Ulica i numer', 'autocomplete="address-line1"')}
@@ -853,7 +870,7 @@ async function bindCheckout() {
       <section class="co-step">
         <h2 class="h3"><span class="step-no">${physical ? 4 : 3}</span>Uwagi i zgody</h2>
         <div class="field"><label for="co-note">Uwagi do zamówienia <span class="muted">(opcjonalnie)</span></label><textarea id="co-note" name="note" rows="2" maxlength="500" placeholder="np. kolor logo zgodny z Pantone 1795 C"></textarea></div>
-        <label class="check"><input type="checkbox" name="terms" id="co-terms"><span>Akceptuję regulamin sklepu i zapoznałem się z polityką prywatności. <span class="muted">(Treść dokumentów dodamy w Etapie 7.)</span></span></label>
+        <label class="check"><input type="checkbox" name="terms" id="co-terms"><span>Akceptuję <a href="#regulamin" target="_blank">regulamin sklepu</a> i zapoznałem się z <a href="#prywatnosc" target="_blank">polityką prywatności</a>.</span></label>
         ${digital ? '<label class="check"><input type="checkbox" name="digital_consent" id="co-digital_consent"><span>Chcę otrzymać produkty cyfrowe od razu po płatności. Wiem, że po rozpoczęciu pobierania tracę prawo odstąpienia od umowy.</span></label>' : ''}
         ${q.cart.lines.some((l) => l.product.personalizable) ? '<p class="small">Produkty z logo wykonujemy według Twojego projektu, więc nie można ich zwrócić bez wady. Przed drukiem wyślemy podgląd do akceptacji.</p>' : ''}
       </section>
@@ -862,6 +879,7 @@ async function bindCheckout() {
     <aside class="summary co-summary" aria-label="Podsumowanie zamówienia">
       <div id="co-summary">${checkoutSummary(q)}</div>
       <p class="form-error" role="alert" hidden></p>
+      ${state.customer ? '' : '<div class="ts-slot" data-ts></div>'}
       <button class="btn btn-primary" type="submit" id="co-submit">Zamawiam i płacę</button>
       <p class="small">Klikając, składasz zamówienie z obowiązkiem zapłaty.</p>
       <a class="small" href="#koszyk">Wróć do koszyka</a>
@@ -918,6 +936,46 @@ async function bindCheckout() {
 
   renderPayments(q.payment_options, null);
   syncShipping();
+  mountTurnstile();
+  const pickLocker = (point) => {
+    const input = form.querySelector('[name="locker_code"]');
+    input.value = point.code;
+    input.removeAttribute('aria-invalid');
+    const picked = document.getElementById('locker-picked');
+    picked.textContent = `Wybrany Paczkomat: ${point.code}${point.address ? ` — ${point.address}` : ''}`;
+    picked.hidden = false;
+    document.querySelectorAll('.lk-item').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.code === point.code)));
+  };
+  document.getElementById('locker-map-btn')?.addEventListener('click', () => openLockerMap(q.inpost, pickLocker));
+
+  // wyszukiwarka punktów (publiczne API InPost przez /api/lockers)
+  const lkBox = document.getElementById('lk-results');
+  const showLockers = (list, how) => {
+    if (!list.length) { lkBox.innerHTML = `<p class="small">Nie znaleźliśmy Paczkomatów ${esc(how)}. Spróbuj kodu pocztowego albo sąsiedniej miejscowości.</p>`; return; }
+    lkBox.innerHTML = `<p class="small">${list.length} ${plural(list.length, 'punkt', 'punkty', 'punktów')} ${esc(how)}${store.mode === 'local' ? ' · <b>punkty przykładowe w podglądzie</b>' : ''}</p>
+      <ul class="lk-list">${list.map((l) => `<li><button type="button" class="lk-item" data-code="${esc(l.code)}" data-address="${esc(`${l.street}, ${l.city}`)}" aria-pressed="false">
+        <span class="lk-code mono">${esc(l.code)}</span>
+        <span class="lk-addr">${esc(l.street)}<br><span class="small">${esc(l.city)}${l.description ? ` · ${esc(l.description)}` : ''}</span></span>
+        <span class="lk-meta small">${l.distance_m !== null && l.distance_m !== undefined ? `${l.distance_m < 1000 ? `${l.distance_m} m` : `${(l.distance_m / 1000).toFixed(1).replace('.', ',')} km`}<br>` : ''}${l.open247 ? '24/7' : esc(l.hours || 'w godz. otwarcia')}</span>
+      </button></li>`).join('')}</ul>`;
+    lkBox.querySelectorAll('.lk-item').forEach((b) => b.addEventListener('click', () => pickLocker({ code: b.dataset.code, address: b.dataset.address })));
+  };
+  const searchLockers = async (query, how) => {
+    lkBox.innerHTML = '<p class="small">Szukam Paczkomatów…</p>';
+    try { showLockers(await store.lockers(query), how); } catch (err) { lkBox.innerHTML = `<p class="small">${esc(err.message)}</p>`; }
+  };
+  const lkInput = document.getElementById('lk-q');
+  document.getElementById('lk-go')?.addEventListener('click', () => searchLockers(lkInput.value, `dla „${lkInput.value.trim()}”`));
+  lkInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchLockers(lkInput.value, `dla „${lkInput.value.trim()}”`); } });
+  document.getElementById('lk-geo')?.addEventListener('click', () => {
+    if (!navigator.geolocation) { lkBox.innerHTML = '<p class="small">Przeglądarka nie udostępnia lokalizacji. Wpisz miasto lub kod pocztowy.</p>'; return; }
+    lkBox.innerHTML = '<p class="small">Sprawdzam lokalizację…</p>';
+    navigator.geolocation.getCurrentPosition(
+      (pos) => searchLockers(`${pos.coords.latitude.toFixed(5)},${pos.coords.longitude.toFixed(5)}`, 'w promieniu 5 km'),
+      () => { lkBox.innerHTML = '<p class="small">Nie mamy dostępu do lokalizacji. Wpisz miasto lub kod pocztowy.</p>'; },
+      { timeout: 10000, maximumAge: 600000 }
+    );
+  });
   requote();
 
   form.addEventListener('change', (e) => {
@@ -944,7 +1002,7 @@ async function bindCheckout() {
     submit.disabled = true;
     const label = submit.textContent;
     submit.textContent = 'Składam zamówienie…';
-    store.checkout({ ...v, expected_total_gr: lastQuote.totals.total_gr }).then(async (res) => {
+    store.checkout({ ...v, cf_turnstile: v['cf-turnstile-response'], expected_total_gr: lastQuote.totals.total_gr }).then(async (res) => {
       setCart(await store.getCart());
       if (res.warning) toast(res.warning, false);
       follow(res);
@@ -954,10 +1012,58 @@ async function bindCheckout() {
       const bad = err.field && form.querySelector(`[name="${err.field}"]`);
       if (bad) { bad.setAttribute('aria-invalid', 'true'); bad.focus(); }
       if (err.status === 409) requote();
+      resetTurnstile(form);
       submit.disabled = false;
       submit.textContent = label;
     });
   });
+}
+
+// Mapa Paczkomatów — InPost Geowidget v5 ładowany dopiero po kliknięciu
+let geowidgetLoaded = null;
+function loadGeowidget(sandbox) {
+  if (geowidgetLoaded) return geowidgetLoaded;
+  const host = sandbox ? 'https://sandbox-easy-geowidget-sdk.easypack24.net' : 'https://geowidget.inpost.pl';
+  geowidgetLoaded = new Promise((resolve, reject) => {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = `${host}/inpost-geowidget.css`;
+    document.head.append(css);
+    const js = document.createElement('script');
+    js.src = `${host}/inpost-geowidget.js`;
+    js.defer = true;
+    js.onload = resolve;
+    js.onerror = () => { geowidgetLoaded = null; reject(new Error('Nie udało się wczytać mapy InPost. Wpisz kod Paczkomatu ręcznie.')); };
+    document.head.append(js);
+  });
+  return geowidgetLoaded;
+}
+
+function openLockerMap(cfg, onPick) {
+  const dlg = document.createElement('div');
+  dlg.className = 'map-modal';
+  dlg.setAttribute('role', 'dialog');
+  dlg.setAttribute('aria-modal', 'true');
+  dlg.setAttribute('aria-label', 'Wybór Paczkomatu');
+  dlg.innerHTML = `<div class="map-box"><div class="map-head"><span class="h3">Wybierz Paczkomat</span><button type="button" class="btn" data-close>Zamknij</button></div>
+    <div class="map-body"><p class="muted">Ładuję mapę InPost…</p></div></div>`;
+  document.body.append(dlg);
+  const close = () => { document.removeEventListener('pk-point-selected', onSelect); dlg.remove(); document.getElementById('locker-map-btn')?.focus(); };
+  const onSelect = (e) => {
+    const p = e.detail ?? {};
+    const a = p.address_details ?? {};
+    const address = [p.address?.line1, p.address?.line2].filter(Boolean).join(', ') || [a.street && `${a.street} ${a.building_number ?? ''}`.trim(), a.city].filter(Boolean).join(', ');
+    if (p.name) onPick({ code: String(p.name).toUpperCase(), address });
+    close();
+  };
+  document.addEventListener('pk-point-selected', onSelect);
+  dlg.addEventListener('click', (e) => { if (e.target === dlg || e.target.closest('[data-close]')) close(); });
+  dlg.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+  dlg.querySelector('[data-close]').focus();
+  loadGeowidget(cfg.sandbox).then(() => {
+    dlg.querySelector('.map-body').innerHTML =
+      `<inpost-geowidget onpoint="pk-point-selected" token="${esc(cfg.geowidget_token)}" language="pl" config="parcelCollect"></inpost-geowidget>`;
+  }).catch((err) => { dlg.querySelector('.map-body').innerHTML = `<p class="muted">${esc(err.message)}</p>`; });
 }
 
 // ───────────── Bramka testowa ─────────────
@@ -1109,6 +1215,48 @@ async function bindOrderPage() {
   } else state.pollCount = 0;
 }
 
+// ───────────── Dokumenty ─────────────
+
+function renderLegal(key) {
+  const d = LEGAL[key];
+  const nav = Object.entries(LEGAL).map(([k, v]) => `<a href="#${k}" ${k === key ? 'aria-current="page"' : ''}>${esc(v.title)}</a>`).join('');
+  return `<div class="page-head"><div class="crumbs"><a href="#start">Start</a><span>/</span><span>${esc(d.title)}</span></div>
+      <h1 class="h2">${esc(d.title)}</h1><p class="small">Obowiązuje od ${esc(d.updated)} · wzór dla sklepu demonstracyjnego</p></div>
+    <div class="legal">
+      <nav class="legal-nav" aria-label="Dokumenty">${nav}</nav>
+      <div class="legal-body">
+        ${d.sections.map(([h, html], i) => `<section id="${key}-${i + 1}"><h2 class="h3">${i + 1}. ${esc(h)}</h2>${html}</section>`).join('')}
+        ${key === 'odstapienie' ? `<section class="panel" id="withdrawal">
+          <h2 class="h3">Odstąp od umowy online</h2>
+          <form id="withdrawal-form" class="co-grid" novalidate>
+            <div class="co-grid two">
+              <div class="field"><label for="wd-number">Numer zamówienia</label><input id="wd-number" name="number" placeholder="PK/2026/000123" autocomplete="off" required></div>
+              <div class="field"><label for="wd-email">E-mail z zamówienia</label><input id="wd-email" name="email" type="email" autocomplete="email" required value="${esc(state.customer?.email ?? '')}"></div>
+            </div>
+            <div class="field"><label for="wd-items">Od których produktów odstępujesz</label><textarea id="wd-items" name="items" rows="2" required placeholder="np. Kubek termiczny 450 ml, grafitowy × 1"></textarea></div>
+            <div class="field"><label for="wd-account">Numer konta do zwrotu <span class="muted">(tylko przy płatności przelewem lub za pobraniem)</span></label><input id="wd-account" name="account" inputmode="numeric" autocomplete="off"></div>
+            <div class="field"><label for="wd-note">Uwagi <span class="muted">(opcjonalnie)</span></label><textarea id="wd-note" name="note" rows="2"></textarea></div>
+            <div class="ts-slot" data-ts></div>
+            <p class="form-error" role="alert" hidden></p>
+            <div id="wd-result" role="status"></div>
+            <button class="btn btn-primary" type="submit">Wyślij oświadczenie</button>
+          </form></section>` : ''}
+      </div>
+    </div>`;
+}
+
+function bindLegal() {
+  const form = document.getElementById('withdrawal-form');
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitForm(form, async (d) => {
+      const r = await state.store.withdrawal({ ...d, cf_turnstile: d['cf-turnstile-response'] });
+      document.getElementById('wd-result').innerHTML = `<p class="note">${esc(r.message)}</p>`;
+      form.querySelector('button[type="submit"]').hidden = true;
+    });
+  });
+}
+
 // ───────────── Router ─────────────
 
 let toastTimer;
@@ -1162,6 +1310,8 @@ function render() {
     html = renderSimulator(); title = 'Płatność testowa — PromoKuźnia'; after = bindSimulator;
   } else if (route === 'zamowienie') {
     html = renderOrderPage(); title = 'Zamówienie — PromoKuźnia'; after = bindOrderPage;
+  } else if (LEGAL[route]) {
+    html = renderLegal(route); title = `${LEGAL[route].title} — PromoKuźnia`; after = bindLegal;
   } else if (route === 'nowe-haslo') {
     html = renderNewPassword(); title = 'Nowe hasło — PromoKuźnia'; after = bindNewPassword;
   }
@@ -1179,6 +1329,33 @@ function render() {
     sortSel.addEventListener('change', () => { state.sort = sortSel.value; render(); });
   }
   after?.();
+  mountTurnstile();
+}
+
+// Cloudflare Turnstile — tylko gdy sklep ma klucz (TURNSTILE_SITE_KEY). Widget sam dodaje do formularza
+// ukryte pole cf-turnstile-response, które wysyłamy jako cf_turnstile.
+let turnstileScript = null;
+function mountTurnstile() {
+  const slots = [...document.querySelectorAll('[data-ts]:not([data-ts-done])')];
+  if (!state.turnstileKey || !slots.length) return;
+  turnstileScript ??= new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    s.async = true; s.onload = resolve; s.onerror = reject;
+    document.head.append(s);
+  });
+  turnstileScript.then(() => {
+    for (const el of slots) {
+      if (!el.isConnected || el.dataset.tsDone) continue;
+      el.dataset.tsDone = '1';
+      el.dataset.tsId = window.turnstile.render(el, { sitekey: state.turnstileKey, language: 'pl', theme: 'auto', size: 'flexible' });
+    }
+  }).catch(() => {});
+}
+// po nieudanej wysyłce token jest zużyty — prosimy o nowy
+function resetTurnstile(form) {
+  const el = form?.querySelector('[data-ts-id]');
+  if (el && window.turnstile) window.turnstile.reset(el.dataset.tsId);
 }
 
 async function onRoute() {
@@ -1211,6 +1388,7 @@ loadCatalog().then(async (data) => {
     for (const v of p.variants) state.byVariant[v.id] = { product: p, variant: v };
   }
   state.store = data.source === 'api' ? apiStore : createLocalStore(data, window.__DEMO_COUPONS__ ?? []);
+  if (state.store.mode === 'api') state.store.config().then((c) => { state.turnstileKey = c.turnstile_site_key; mountTurnstile(); }).catch(() => {});
   const [cart, customer] = await Promise.all([state.store.getCart(), state.store.me()]);
   setCart(cart);
   setCustomer(customer);

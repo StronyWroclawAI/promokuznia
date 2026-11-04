@@ -150,11 +150,32 @@ function actionsPanel(o) {
   if (a.has('request_changes')) blocks.push(`<div class="act"><label class="small" for="chg">Uwagi do projektu dla klienta</label>
     <textarea id="chg" rows="2" placeholder="np. logo w niskiej rozdzielczości — prosimy o plik wektorowy"></textarea>
     <div class="act-row"><button class="btn" data-act="request_changes" data-note="#chg">Wyślij klientowi: projekt do poprawy</button></div></div>`);
+  const sh = o.shipments.filter((x) => x.status !== 'canceled').at(-1);
+  if (a.has('create_shipment')) {
+    const p = o.inpost.parcel;
+    blocks.push(o.shipping_method === 'paczkomat'
+      ? `<div class="act"><p class="small">Paczkomat <b class="mono">${esc(o.locker_code)}</b>${o.payment_method === 'pobranie' ? ` · pobranie ${zl(o.totals.total_gr)}` : ''}${o.inpost.mode === 'symulator' ? ' · <b>tryb testowy</b>' : ''}</p>
+        <div class="act-row"><label class="small" for="psize">Gabaryt</label>
+          <select id="psize">${['A', 'B', 'C'].map((g) => `<option value="${g}" ${p.size === g ? 'selected' : ''}>${g} — ${{ A: '8 × 38 × 64 cm', B: '19 × 38 × 64 cm', C: '41 × 38 × 64 cm' }[g]}</option>`).join('')}</select></div>
+        <div class="act-row"><button class="btn btn-primary" data-act="create_shipment">Utwórz przesyłkę InPost</button></div></div>`
+      : `<div class="act"><p class="small">Kurier InPost${o.payment_method === 'pobranie' ? ` · pobranie ${zl(o.totals.total_gr)}` : ''}${o.inpost.mode === 'symulator' ? ' · <b>tryb testowy</b>' : ''}</p>
+        <div class="act-row dims">
+          <label>kg<input type="number" id="pw" min="0.1" max="30" step="0.1" value="${p.weight_kg}"></label>
+          <label>dł. cm<input type="number" id="pl" min="1" value="${p.length_cm}"></label>
+          <label>szer.<input type="number" id="pwd" min="1" value="${p.width_cm}"></label>
+          <label>wys.<input type="number" id="ph" min="1" value="${p.height_cm}"></label></div>
+        <div class="act-row"><button class="btn btn-primary" data-act="create_shipment">Zamów kuriera InPost</button></div></div>`);
+  }
+  if (sh?.label_url) blocks.push(`<div class="act"><p class="small">Przesyłka <b class="mono">${esc(sh.tracking_number ?? 'numer w drodze…')}</b> · ${esc(sh.status_label ?? sh.status)}</p>
+    <div class="act-row"><a class="btn" href="${esc(sh.label_url)}" target="_blank" rel="noopener">Etykieta A6</a><a class="btn" href="${esc(sh.label_url)}?format=A4" target="_blank" rel="noopener">A4</a>
+    ${a.has('refresh_shipment') ? '<button class="btn" data-act="refresh_shipment">Odśwież status</button>' : ''}</div>
+    <p class="small">Gdy InPost odbierze paczkę, zamówienie samo zmieni się na „Wysłane”, a klient dostanie mail z numerem.</p></div>`);
   if (a.has('ship')) blocks.push(o.shipping_method === 'odbior'
     ? `<div class="act"><div class="act-row"><button class="btn btn-primary" data-act="ship">Gotowe do odbioru</button></div></div>`
-    : `<div class="act"><label class="small" for="trk">Numer przesyłki ${o.locker_code ? `(Paczkomat <span class="mono">${esc(o.locker_code)}</span>)` : ''}</label>
-      <div class="act-row"><input type="text" id="trk" placeholder="np. 520000012345678901234567" autocomplete="off"><button class="btn btn-primary" data-act="ship" data-tracking="#trk">Oznacz jako wysłane</button></div>
-      <p class="small">Etykiety InPost z poziomu panelu dojdą w Etapie 5. Na razie wpisz numer z Managera Paczek.</p></div>`);
+    : sh?.tracking_number
+      ? `<div class="act"><div class="act-row"><button class="btn" data-act="ship">Oznacz jako wysłane ręcznie</button></div></div>`
+      : `<div class="act"><label class="small" for="trk">${a.has('create_shipment') ? 'Albo wpisz numer z innego przewoźnika' : 'Numer przesyłki'} ${o.locker_code ? `(Paczkomat <span class="mono">${esc(o.locker_code)}</span>)` : ''}</label>
+      <div class="act-row"><input type="text" id="trk" placeholder="np. 520000012345678901234567" autocomplete="off"><button class="btn" data-act="ship" data-tracking="#trk">Oznacz jako wysłane</button></div></div>`);
   if (a.has('deliver')) blocks.push(`<div class="act"><div class="act-row"><button class="btn btn-primary" data-act="deliver">${o.shipping_method === 'odbior' ? 'Odebrane przez klienta' : 'Doręczone'}</button></div></div>`);
   if (a.has('complete')) blocks.push(`<div class="act"><div class="act-row"><button class="btn btn-primary" data-act="complete">Zakończ zamówienie</button></div></div>`);
   if (a.has('refund')) {
@@ -224,7 +245,7 @@ async function viewOrder(id) {
             ${o.locker_code ? `<dt>Paczkomat</dt><dd class="mono">${esc(o.locker_code)}</dd>` : ''}
             ${ship?.name ? `<dt>Odbiorca</dt><dd>${esc(ship.name)}</dd>` : ''}
             ${ship?.street ? `<dt>Adres</dt><dd>${esc(ship.street)}<br>${esc(ship.postcode)} ${esc(ship.city)}</dd>` : ''}
-            ${o.shipments.map((s) => `<dt>Przesyłka</dt><dd class="mono">${esc(s.tracking_number)}<br><span class="small">${esc(s.status)}</span></dd>`).join('')}
+            ${o.shipments.map((s) => `<dt>Przesyłka</dt><dd><span class="mono">${esc(s.tracking_number ?? '—')}</span><br><span class="small">${esc(s.status_label ?? s.status)}${s.cod_gr ? ` · pobranie ${zl(s.cod_gr)}` : ''}</span>${s.tracking_number ? `<br><a class="small" href="https://inpost.pl/sledzenie-przesylek?number=${encodeURIComponent(s.tracking_number)}" target="_blank" rel="noopener">Śledzenie InPost</a>` : ''}</dd>`).join('')}
           </dl></div>
           <div><p class="eyebrow">Faktura</p>${bill ? `<dl class="kv"><dt>Firma</dt><dd>${esc(bill.company)}</dd><dt>NIP</dt><dd class="mono">${esc(bill.nip)}</dd><dt>Adres</dt><dd>${esc(bill.street)}<br>${esc(bill.postcode)} ${esc(bill.city)}</dd></dl>` : '<p class="small">Paragon (klient nie prosił o fakturę)</p>'}</div>
           <div><p class="eyebrow">Maile do klienta</p>${o.emails.length ? `<ul class="plain mail-log">${o.emails.map((m) => `<li><span class="small mono">${dt(m.created_at)}</span> ${esc(m.subject)}<br><span class="small ${m.status === 'blad' ? 'low' : ''}">${esc(m.to_email)} · ${esc({ wyslany: 'wysłany', blad: 'błąd', pominiety: 'nie wysłany — brak klucza Resend' }[m.status])}${m.error ? ` · ${esc(m.error)}` : ''}</span></li>`).join('')}</ul>` : '<p class="small">Jeszcze żadnego.</p>'}</div>
@@ -245,6 +266,10 @@ async function viewOrder(id) {
     const body = { action: btn.dataset.act };
     if (btn.dataset.note) body.note = document.querySelector(btn.dataset.note).value;
     if (btn.dataset.tracking) body.tracking_number = document.querySelector(btn.dataset.tracking).value;
+    if (body.action === 'create_shipment') {
+      if (document.getElementById('psize')) body.size = document.getElementById('psize').value;
+      else Object.assign(body, { weight_kg: document.getElementById('pw').value, length_cm: document.getElementById('pl').value, width_cm: document.getElementById('pwd').value, height_cm: document.getElementById('ph').value });
+    }
     if (body.action === 'refund') {
       body.amount_gr = Math.round(Number(String(document.getElementById('ref').value).replace(',', '.')) * 100);
       body.restock = !!document.getElementById('restock')?.checked;
@@ -327,7 +352,8 @@ async function render() {
     else location.hash = 'pulpit';
   } catch (err) {
     if (err.status === 401 || err.status === 403) return start();
-    main.innerHTML = `<div class="empty"><p class="h3">Nie udało się wczytać danych.</p><p class="muted">${esc(err.message)}</p><button class="btn" type="button" onclick="location.reload()">Odśwież</button></div>`;
+    main.innerHTML = `<div class="empty"><p class="h3">Nie udało się wczytać danych.</p><p class="muted">${esc(err.message)}</p><button class="btn" type="button" id="reload">Odśwież</button></div>`;
+    document.getElementById('reload').addEventListener('click', () => location.reload());
   }
   // kliknięcie w wiersz tabeli = przejście do szczegółów
   main.querySelectorAll('tr[data-href]').forEach((r) => r.addEventListener('click', (e) => { if (e.target.closest('a,button,input,label')) return; location.hash = r.dataset.href; }));

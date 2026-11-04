@@ -13,9 +13,9 @@ Stack: **Cloudflare Pages + Pages Functions + D1** (później KV, R2, Cron), fro
 | 2 | Katalog: strona główna, kategorie, wyszukiwarka, karta produktu, API | gotowe |
 | 3 | Koszyk w D1, konto klienta, upload plików do R2, kody rabatowe | gotowe |
 | 4 | Kasa, zamówienia, Stripe + Przelewy24 + bramka testowa, przelew, pobranie, webhooki | gotowe |
-| 5 | InPost ShipX + Geowidget, Furgonetka | — |
+| 5 | InPost ShipX + Geowidget (Paczkomat i kurier, etykiety, statusy) | gotowe; Furgonetka — opcjonalnie |
 | 6 | Panel admina, maile (Resend), faktury (Fakturownia) | panel i maile gotowe; faktury — dalej |
-| 7 | Regulamin, RODO, Omnibus, testy | Omnibus już liczony |
+| 7 | Regulamin, prywatność, odstąpienie, limity prób, Turnstile, nagłówki, testy | gotowe |
 | 8 | Domena, tryb demo, karta portfolio | — |
 
 ## Uruchomienie lokalne
@@ -64,6 +64,10 @@ functions/              API (Pages Functions)
   api/cart/…                  GET /api/cart, POST/PATCH/DELETE /api/cart/items, POST/DELETE /api/cart/coupon
   api/auth/…                  register, login, logout, me, reset-request, reset
   api/account/orders.js       historia zamówień
+  api/lockers.js              wyszukiwarka Paczkomatów (publiczne API punktów InPost, bez konta)
+  api/withdrawal.js           formularz odstąpienia od umowy
+  api/config.js               publiczne ustawienia frontu (klucz Turnstile)
+  _lib/guard.js               limity prób w D1, weryfikacja Turnstile
   api/checkout.js             GET wycena dla dostawy i płatności, POST złożenie zamówienia
   api/order/…                 GET /api/order?number=&t=, POST /api/order/pay (ponowna płatność)
   api/webhooks/stripe.js      powiadomienia Stripe (podpis HMAC, idempotencja)
@@ -71,6 +75,10 @@ functions/              API (Pages Functions)
   api/payments/simulate.js    bramka testowa w trybie demo, gdy brak kluczy
   api/downloads/[token].js    produkty cyfrowe: link ważny 7 dni, 5 pobrań
   api/admin/…                 panel: summary, orders, orders/:id (akcje), products, variants/:id, uploads/:id
+  _lib/inpost.js              ShipX: przesyłka, status, etykieta, sprawdzanie Paczkomatu, symulator z etykietą PDF
+  _lib/shipping.js            przesyłka zamówienia, synchronizacja statusu z zamówieniem
+  api/admin/shipments/[id]/label.js  etykieta A6/A4 (token InPost nie trafia do przeglądarki)
+  api/webhooks/inpost/[key].js       powiadomienia InPost (klucz w adresie, status pobierany z API)
   _lib/mail.js                maile przez Resend: szablony HTML + tekst, dziennik wysyłek
   _lib/admin.js               uprawnienia (ADMIN_EMAILS), przejścia statusów, zwroty
   _lib/orders.js              zamówienie z koszyka w jednej transakcji, finalizacja, wygaszanie rezerwacji
@@ -80,11 +88,15 @@ functions/              API (Pages Functions)
   _lib/cart.js                koszyk gościa (ciasteczko) i klienta, łączenie po zalogowaniu
   _lib/crypto.js              PBKDF2 100 000 iteracji, tokeny, SHA-256
 public/admin/                 panel admina: index.html, admin.js, admin.css (pod adresem /admin/)
+public/assets/legal.js        regulamin, polityka prywatności, odstąpienie (wzory do uzupełnienia danymi firmy)
+public/_headers               nagłówki bezpieczeństwa i Content-Security-Policy
+tests/unit.test.mjs           testy jednostkowe (npm test)
 public/assets/pricing.js      wyliczanie sum koszyka — wspólne dla frontu i API
 public/assets/store.js        koszyk i konto: przez API albo lokalnie w podglądzie
 migrations/0001_init.sql      pełny schemat: katalog, klienci, koszyk, zamówienia,
                               płatności (idempotencja webhooków), wysyłki, rabaty, bony, pobrania
 migrations/0002_…sql          sesje, reset hasła, pliki klientów
+migrations/0005_przesylki.sql dane przesyłek InPost
 migrations/0004_maile.sql     link do zamówienia w mailach, dziennik maili
 migrations/0003_…sql          token dostępu do zamówienia, płatności z próbami i symulatorem
 seed/catalog.json             źródło asortymentu — edytuj tutaj
@@ -175,3 +187,47 @@ Domena nadawcy musi być zweryfikowana w Resend (Domains → Add Domain → reko
 
 Sklep dostaje jedno powiadomienie o każdym nowym zamówieniu na adresy z `ADMIN_EMAILS`.
 Każda wysyłka ląduje w tabeli `emails` i jest widoczna w panelu przy zamówieniu (wysłany / błąd / pominięty). Błąd Resend nie blokuje zamówienia — maile idą w tle (`waitUntil`). W panelu można zaznaczyć „nie wysyłaj maila” przy zmianie statusu.
+
+## Wysyłki InPost (Etap 5)
+
+**Kasa:** przy dostawie do Paczkomatu klient wybiera punkt na mapie InPost (Geowidget v5, ładowany po kliknięciu). Bez tokenu mapy — wpisuje kod.
+Serwer sprawdza w publicznym API punktów, czy Paczkomat istnieje i działa.
+
+**Panel (zamówienie „W realizacji”):**
+1. *Utwórz przesyłkę InPost* — gabaryt A/B/C podpowiadany z produktów (Paczkomat) albo waga i wymiary (kurier). Pobranie i ubezpieczenie ustawiają się same.
+2. *Etykieta A6 / A4* — PDF prosto z InPost.
+3. Status aktualizuje się sam (webhook) albo przyciskiem *Odśwież status*. Odebrana od nadawcy → zamówienie „Wysłane” + mail z numerem; doręczona → „Dostarczone”, a pobranie rozliczone.
+
+Bez tokenu (tryb demo) działa symulator: numer przesyłki, etykieta testowa PDF i kolejne statusy przy każdym odświeżeniu.
+
+**Konfiguracja (sandbox):**
+1. Konto: https://sandbox-manager.paczkomaty.pl — uzupełnij dane firmy i do faktury, w zakładce Płatności doładuj konto wirtualnie.
+2. Moje konto → API: **Token API ShipX** → sekret `INPOST_API_TOKEN`, **ID organizacji** → sekret `INPOST_ORGANIZATION_ID`.
+3. Moje konto → API → Geowidget: token dla domeny `promokuznia.pages.dev` → `INPOST_GEOWIDGET_TOKEN`.
+4. Losowy klucz (min. 24 znaki) → sekret `INPOST_WEBHOOK_KEY`; w Ustawieniach organizacji adres webhooka:
+   `https://promokuznia.pages.dev/api/webhooks/inpost/<INPOST_WEBHOOK_KEY>`.
+5. Produkcja: konto na manager.paczkomaty.pl, te same kroki i `INPOST_SANDBOX = "0"` w `wrangler.toml`.
+
+## Dokumenty, bezpieczeństwo i testy (Etap 7)
+
+**Dokumenty** (`#regulamin`, `#prywatnosc`, `#odstapienie`) — wzory oparte na ustawie o prawach konsumenta i RODO, z miejscami na dane firmy (`SELLER` w `public/assets/legal.js`). Przed prawdziwą sprzedażą: uzupełnij dane i daj do sprawdzenia prawnikowi.
+Formularz odstąpienia zapisuje oświadczenie przy zamówieniu (widać je w historii w panelu) i wysyła maile do klienta i sklepu.
+
+**Limity prób** (tabela `rate_limits`, licznik w jednym zapytaniu UPSERT):
+
+| Co | Limit |
+|---|---|
+| Logowanie | 10 prób / 15 min na konto, 30 / 15 min z jednego IP; udane logowanie zeruje licznik konta |
+| Rejestracja | 10 / godz. z IP |
+| Reset hasła | 3 / godz. na adres, 10 / godz. z IP |
+| Kasa | 20 zamówień / godz. z IP |
+| Wgrywanie plików | 40 / godz. z IP |
+| Odstąpienie | 5 / godz. z IP |
+
+**Turnstile** (opcjonalnie, darmowe): Cloudflare → Turnstile → Add widget dla domeny sklepu; klucz publiczny do `TURNSTILE_SITE_KEY` w `wrangler.toml`, tajny jako sekret `TURNSTILE_SECRET`. Chroni rejestrację, reset hasła, kasę gościa i formularz odstąpienia.
+
+**Nagłówki** (`public/_headers`): CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy.
+
+**Testy:** `npm test` — 19 testów: sumy, dostawa, rabaty, pobranie, VAT, walidacja kasy i NIP, Omnibus, podpis Stripe, hasła, uprawnienia panelu, przesyłki InPost.
+
+**Wybór Paczkomatu bez konta InPost:** kasa szuka punktów po mieście, kodzie pocztowym, lokalizacji („Blisko mnie”) albo kodzie punktu przez `/api/lockers` (publiczne API punktów ShipX). Mapa Geowidget pojawia się dodatkowo, gdy jest `INPOST_GEOWIDGET_TOKEN`.

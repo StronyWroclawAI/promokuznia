@@ -13,9 +13,13 @@
     "preview:build": "node scripts/build-preview.mjs",
     "db:migrate:remote": "wrangler d1 migrations apply promokuznia-db --remote",
     "db:seed:remote": "node scripts/build-seed.mjs && wrangler d1 execute promokuznia-db --remote --file=seed/seed.sql",
-    "deploy": "wrangler pages deploy"
+    "deploy": "wrangler pages deploy",
+    "test": "node --test \"tests/*.test.mjs\""
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

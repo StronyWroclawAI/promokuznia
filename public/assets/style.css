@@ -408,6 +408,40 @@ legend { font-weight: 600; margin-bottom: var(--s-2); padding: 0; }
 .co-lines li { display: flex; justify-content: space-between; gap: var(--s-3); }
 .co-lines .mono { white-space: nowrap; }
 
+.locker { display: grid; gap: var(--s-3); justify-items: start; }
+.locker .field { width: 100%; }
+.locker-picked { margin: 0; padding: 6px 10px; border: 1px dashed var(--c-c); border-radius: 2px; }
+.locker-search { display: grid; gap: 6px; width: 100%; }
+.locker-search label { font-weight: 600; font-size: 14px; }
+.locker-row { display: flex; gap: var(--s-2); flex-wrap: wrap; }
+.locker-row input { flex: 1 1 220px; min-width: 0; padding: 11px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+.lk-results { width: 100%; display: grid; gap: var(--s-2); }
+.lk-results .small { margin: 0; }
+.lk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 340px; overflow-y: auto; }
+.lk-item {
+  width: 100%; display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: var(--s-3); align-items: center; text-align: left;
+  padding: 10px 12px; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--radius); cursor: pointer; font: inherit; color: inherit;
+}
+.lk-item:hover { border-color: var(--ink); }
+.lk-item[aria-pressed="true"] { border-color: var(--c-c); box-shadow: inset 0 0 0 1px var(--c-c); background: color-mix(in srgb, var(--c-c) 7%, var(--sheet)); }
+.lk-code { font-weight: 600; color: var(--c-c); }
+.lk-addr { min-width: 0; }
+.lk-meta { text-align: right; white-space: nowrap; }
+@media (max-width: 520px) { .lk-item { grid-template-columns: minmax(0, 1fr) auto; } .lk-code { grid-column: 1 / -1; } }
+.map-modal {
+  position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--ink) 55%, transparent);
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.map-box { width: min(980px, 100%); height: min(720px, 100%); display: grid; grid-template-rows: auto minmax(0, 1fr); background: var(--sheet); border-radius: 8px; overflow: hidden; }
+.map-head { display: flex; justify-content: space-between; align-items: center; gap: var(--s-3); padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--line); }
+.map-body { position: relative; min-height: 0; }
+.map-body inpost-geowidget { display: block; width: 100%; height: 100%; }
+.map-body > p { padding: var(--s-5); }
+
+.ts-slot:empty { display: none; }
+.ts-slot { min-height: 65px; width: 100%; }
+
 /* ── Bramka testowa ── */
 .gateway { display: grid; place-items: center; padding-block: var(--s-6); }
 .gw-card {
@@ -450,6 +484,22 @@ legend { font-weight: 600; margin-bottom: var(--s-2); padding: 0; }
 .status-pill[data-status="anulowane"] { color: var(--bad); }
 .status-pill[data-status="czeka_na_platnosc"] { color: var(--warn); }
 .status-pill[data-status="zrealizowane"], .status-pill[data-status="dostarczone"] { color: var(--ok); }
+
+/* ── Dokumenty ── */
+.legal { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: var(--s-7); align-items: start; }
+.legal-nav { display: grid; gap: 2px; position: sticky; top: 150px; }
+.legal-nav a { text-decoration: none; padding: 8px 10px; border-radius: var(--radius); color: var(--muted); font-weight: 500; }
+.legal-nav a[aria-current="page"] { color: var(--ink); background: var(--sheet); box-shadow: inset 3px 0 0 var(--accent); }
+.legal-body { display: grid; gap: var(--s-6); max-width: 760px; min-width: 0; }
+.legal-body section { display: grid; gap: var(--s-3); }
+.legal-body p, .legal-body li { margin: 0; line-height: 1.6; }
+.legal-body ol, .legal-body ul { margin: 0; padding-left: 1.3em; display: grid; gap: var(--s-2); }
+.legal-table { font-size: 14px; }
+.legal-table th, .legal-table td { font-family: var(--f-body); }
+.legal-body .tbl-scroll, .legal-body table { display: block; overflow-x: auto; }
+.legal-form { white-space: pre-wrap; font: 400 13px/1.7 var(--f-mono); background: var(--sheet); border: 1px dashed var(--line); padding: var(--s-4); margin: 0; }
+.site-footer a { color: inherit; }
+@media (max-width: 900px) { .legal { grid-template-columns: minmax(0, 1fr); gap: var(--s-4); } .legal-nav { position: static; display: flex; flex-wrap: wrap; } }
 
 /* ── Stopka i toast ── */
 .site-footer { background: var(--sheet); border-top: 1px solid var(--line); }

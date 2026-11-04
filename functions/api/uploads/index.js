@@ -1,5 +1,6 @@
 import { json, problem } from '../../_lib/http.js';
 import { resolveCart } from '../../_lib/cart.js';
+import { rateLimit, clientIp } from '../../_lib/guard.js';
 
 export const MAX_UPLOAD = 20 * 1024 * 1024; // 20 MB
 
@@ -21,6 +22,8 @@ const safeName = (n) => String(n || 'plik').normalize('NFKD').replace(/[^\w.\- ]
 // POST /api/uploads  (multipart/form-data, pole „file”)
 export async function onRequestPost(context) {
   const { env, request } = context;
+  const blocked = await rateLimit(env, `upload:ip:${clientIp(request)}`, 40, 3600);
+  if (blocked) return blocked;
   if (!env.FILES) return problem(503, 'Przechowywanie plików nie jest skonfigurowane (brak bindingu R2 „FILES”).');
 
   const length = Number(request.headers.get('content-length') || 0);

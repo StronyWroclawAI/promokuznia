@@ -31,7 +31,8 @@ export const apiStore = {
   login: (email, password) => call('POST', '/api/auth/login', { email, password }).then((d) => d.customer),
   register: (payload) => call('POST', '/api/auth/register', payload).then((d) => d.customer),
   logout: () => call('POST', '/api/auth/logout'),
-  resetRequest: (email) => call('POST', '/api/auth/reset-request', { email }),
+  resetRequest: (email, cf_turnstile) => call('POST', '/api/auth/reset-request', { email, cf_turnstile }),
+  config: () => call('GET', '/api/config'),
   reset: (token, password) => call('POST', '/api/auth/reset', { token, password }),
   orders: () => call('GET', '/api/account/orders').then((d) => d.orders),
   quote: (opts = {}) => {
@@ -42,7 +43,9 @@ export const apiStore = {
   getOrder: (number, t) => call('GET', `/api/order?${new URLSearchParams({ number, ...(t ? { t } : {}) })}`).then((d) => d.order),
   retryPay: (number, t) => call('POST', '/api/order/pay', { number, t }),
   simulation: (ref) => call('GET', `/api/payments/simulate?${new URLSearchParams({ ref })}`).then((d) => d.payment),
-  simulate: (ref, outcome, t) => call('POST', '/api/payments/simulate', { ref, outcome, t })
+  simulate: (ref, outcome, t) => call('POST', '/api/payments/simulate', { ref, outcome, t }),
+  lockers: (q) => call('GET', `/api/lockers?${new URLSearchParams({ q })}`).then((d) => d.lockers),
+  withdrawal: (payload) => call('POST', '/api/withdrawal', payload)
 };
 
 // ───────────── Tryb podglądu ─────────────
@@ -133,8 +136,19 @@ export function createLocalStore(catalog, demoCoupons = []) {
       s.customer = { email: e, first_name: first_name || null }; save(s); return s.customer;
     },
     async logout() { const s = load(); s.customer = null; save(s); },
+    async withdrawal() { return { ok: true, message: 'W podglądzie bez serwera formularz niczego nie wysyła. W uruchomionym sklepie oświadczenie trafia do zamówienia, a klient i sklep dostają maile.' }; },
     async resetRequest() { return { ok: true, message: 'W podglądzie maile nie wychodzą. W prawdziwym sklepie przyjdzie link ważny 60 minut.' }; },
     async reset() { fail('Reset hasła działa tylko w uruchomionym sklepie.'); },
+    // w podglądzie bez serwera: kilka przykładowych (fikcyjnych) punktów
+    async lockers(q) {
+      const demo = [
+        { code: 'PKZ01A', street: 'Rynek 1', city: '50-101 Wrocław', description: 'Przykładowy punkt — przy wejściu do kamienicy', open247: true, distance_m: 120 },
+        { code: 'PKZ02M', street: 'ul. Świdnicka 20', city: '50-068 Wrocław', description: 'Przykładowy punkt — obok apteki', open247: true, distance_m: 450 },
+        { code: 'PKZ03B', street: 'pl. Grunwaldzki 22', city: '50-363 Wrocław', description: 'Przykładowy punkt — w galerii, poziom 0', open247: false, hours: 'pn–sb 9–21', distance_m: 1800 }
+      ];
+      if (String(q).trim().length < 2) fail('Wpisz miasto, kod pocztowy albo kod Paczkomatu.');
+      return demo;
+    },
     async orders() {
       const s = load();
       if (!s.customer) return [];

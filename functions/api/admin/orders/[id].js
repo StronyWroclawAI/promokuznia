@@ -2,12 +2,15 @@ import { json, problem, readJson } from '../../../_lib/http.js';
 import { STATUS_LABEL } from '../../../_lib/orders.js';
 import { availableActions, runAction, ActionError } from '../../../_lib/admin.js';
 import { notifyOrder, later } from '../../../_lib/mail.js';
+import { activeShipment, suggestedParcel } from '../../../_lib/shipping.js';
+import { inpostMode } from '../../../_lib/inpost.js';
 
 async function load(db, id) {
   return db.prepare('SELECT * FROM orders WHERE id = ?').bind(Number(id)).first();
 }
 
-async function detail(db, order) {
+async function detail(env, order) {
+  const db = env.DB;
   const [items, events, payments, shipments, customer, emails] = await db.batch([
     db.prepare(
       `SELECT i.id, i.name, i.variant_label, i.sku, i.unit_price_gr, i.vat_rate, i.qty, i.product_type, i.product_slug,
@@ -16,11 +19,13 @@ async function detail(db, order) {
     ).bind(order.id),
     db.prepare('SELECT from_status, to_status, source, note, created_at FROM order_events WHERE order_id = ? ORDER BY id').bind(order.id),
     db.prepare('SELECT provider, provider_ref, provider_order, attempt, amount_gr, refunded_gr, status, created_at, updated_at FROM payments WHERE order_id = ? ORDER BY attempt, id').bind(order.id),
-    db.prepare('SELECT carrier, service, tracking_number, status, updated_at FROM shipments WHERE order_id = ?').bind(order.id),
+    db.prepare('SELECT id, carrier, service, external_id, tracking_number, status, status_label, cod_gr, updated_at FROM shipments WHERE order_id = ? ORDER BY id').bind(order.id),
     db.prepare('SELECT email, first_name, created_at, (SELECT COUNT(*) FROM orders WHERE customer_id = c.id) AS orders FROM customers c WHERE id = ?').bind(order.customer_id ?? 0),
     db.prepare('SELECT kind, to_email, subject, status, error, created_at FROM emails WHERE order_id = ? ORDER BY id').bind(order.id)
   ]);
   const payment = payments.results.at(-1) ?? null;
+  const shipment = await activeShipment(db, order.id);
+  const physical = items.results.some((i) => i.product_type === 'physical');
   return {
     id: order.id, number: order.number, status: order.status, status_label: STATUS_LABEL[order.status],
     created_at: order.created_at, email: order.email, phone: order.phone, note: order.customer_note,
@@ -36,9 +41,10 @@ async function detail(db, order) {
     items: items.results.map((i) => ({ ...i, file_url: i.upload_id ? `/api/admin/uploads/${i.upload_id}` : null })),
     events: events.results.map((e) => ({ ...e, label: STATUS_LABEL[e.to_status] })),
     payments: payments.results,
-    shipments: shipments.results,
+    shipments: shipments.results.map((s) => ({ ...s, label_url: s.external_id ? `/api/admin/shipments/${s.id}/label` : null })),
+    inpost: { mode: inpostMode(env), parcel: physical && ['paczkomat', 'kurier_inpost'].includes(order.shipping_method) ? await suggestedParcel(db, order) : null },
     emails: emails.results,
-    actions: availableActions(order, items.results, payment),
+    actions: availableActions(order, items.results, payment, shipment, env),
     refundable_gr: payment ? payment.amount_gr - payment.refunded_gr : 0
   };
 }
@@ -47,7 +53,7 @@ async function detail(db, order) {
 export async function onRequestGet({ env, params }) {
   const order = await load(env.DB, params.id);
   if (!order) return problem(404, 'Nie ma takiego zamówienia.');
-  return json({ order: await detail(env.DB, order) });
+  return json({ order: await detail(env, order) });
 }
 
 // POST /api/admin/orders/:id  { action, note?, tracking_number?, amount_gr?, restock? }
@@ -58,20 +64,25 @@ export async function onRequestPost(context) {
   const order = await load(env.DB, params.id);
   if (!order) return problem(404, 'Nie ma takiego zamówienia.');
   try {
-    const message = await runAction(env, order, String(body.action), body);
+    const result = await runAction(env, order, String(body.action), body);
+    const message = typeof result === 'string' ? result : result.message;
     const after = await load(env.DB, params.id);
+    const shipAfter = await activeShipment(env.DB, order.id);
     // mail do klienta po akcji w panelu
     const origin = new URL(request.url).origin;
     const mail = {
       mark_paid: ['oplacone'],
       approve_project: ['projekt_zaakceptowany'],
       request_changes: ['projekt_do_poprawy', { note: String(body.note ?? '').trim(), key: Date.now() }],
-      ship: ['wyslane', { tracking: String(body.tracking_number ?? '').trim().toUpperCase() }],
+      ship: ['wyslane', { tracking: String(body.tracking_number ?? '').trim().toUpperCase() || shipAfter?.tracking_number }],
       refund: ['zwrot', { amount_gr: Math.round(Number(body.amount_gr)), full: after.status === 'zwrocone', key: Date.now() }],
       cancel: ['anulowane']
     }[body.action];
-    if (mail && body.notify !== false) later(context, notifyOrder(env, origin, order.id, mail[0], mail[1]));
-    return json({ message, order: await detail(env.DB, after) });
+    if (body.notify !== false) {
+      if (mail) later(context, notifyOrder(env, origin, order.id, mail[0], mail[1]));
+      for (const [kind, extra] of result.mails ?? []) later(context, notifyOrder(env, origin, order.id, kind, extra));
+    }
+    return json({ message, order: await detail(env, after) });
   } catch (err) {
     if (err instanceof ActionError) return problem(err.status, err.message);
     if (String(err.message).startsWith('Stripe:')) return problem(502, `Stripe odrzucił zwrot: ${err.message.slice(8)}`);

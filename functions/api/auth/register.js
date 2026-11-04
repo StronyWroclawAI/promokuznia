@@ -1,6 +1,7 @@
 import { json, problem, readJson, nowIso } from '../../_lib/http.js';
 import { hashPassword } from '../../_lib/crypto.js';
 import { normalizeEmail, isEmail, passwordProblem, signIn, publicCustomer } from '../../_lib/auth.js';
+import { rateLimit, clientIp, verifyTurnstile, turnstileFailed } from '../../_lib/guard.js';
 
 const CONSENT_TEXT = 'Chcę dostawać e-mailem informacje o nowościach i promocjach PromoKuźni. Zgodę mogę wycofać w każdej chwili.';
 
@@ -9,6 +10,10 @@ export async function onRequestPost(context) {
   const db = context.env.DB;
   const body = await readJson(context.request);
   if (!body) return problem(400, 'Nieprawidłowe dane żądania.');
+  const ip = clientIp(context.request);
+  const blocked = await rateLimit(context.env, `register:ip:${ip}`, 10, 3600);
+  if (blocked) return blocked;
+  if (!(await verifyTurnstile(context.env, body.cf_turnstile, ip))) return turnstileFailed();
 
   const email = normalizeEmail(body.email);
   if (!isEmail(email)) return problem(400, 'Podaj poprawny adres e-mail.', { field: 'email' });
