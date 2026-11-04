@@ -84,12 +84,17 @@ src.products.forEach((p, i) => {
     sql.push(`INSERT INTO price_history (variant_id, price_gr, valid_from) VALUES (${variants[0].id}, ${hrow.price_gr}, ${q(iso(now - hrow.days_ago * DAY))});`);
   }
 
+  const images = (p.images ?? []).map((im, ii) => {
+    sql.push(`INSERT INTO product_images (product_id, r2_key, src, alt, sort) VALUES (${[id, '', im.src, im.alt, ii].map(q).join(', ')});`);
+    return { src: im.src, alt: im.alt };
+  });
+
   out.products.push({
     id, slug: p.slug, category: p.category, name: p.name, type: p.type, short: p.short,
     description: p.description, vat_rate: p.vat, personalizable: !!p.personalizable,
     lead_time_days: p.lead_time_days, weight_g: p.weight_g ?? null, dims_cm: p.dims_cm ?? null,
     shipping_class: p.shipping ?? null, parcel_size: p.parcel_size ?? null,
-    art: p.art, specs: p.specs, badges: p.badges ?? [],
+    art: p.art, images, specs: p.specs, badges: p.badges ?? [],
     compare_at_gr: p.compare_at_gr ?? null, lowest_30d_gr: lowestBefore(p.price_history),
     gpsr, variants,
     price_from_gr: Math.min(...variants.map((v) => v.price_gr))

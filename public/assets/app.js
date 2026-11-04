@@ -159,12 +159,100 @@ function art(p, size = 'card') {
     <rect width="400" height="300" fill="${t}" opacity="${size === 'hero' ? 0.1 : 0.08}"/>${shape(t)}</svg>`;
 }
 
+
+// ───────────── Zdjęcia produktów ─────────────
+// Zdjęcie z katalogu (R2 albo URL); gdy się nie wczyta — ilustracja SVG w tym samym miejscu.
+
+const imagesOf = (p) => (state.bySlug[p.slug] ?? p).images ?? [];
+// Pexels skaluje zdjęcia parametrem w= — mniejsze pliki na kartach, większe na stronie produktu
+const sized = (src, w) => (/images\.pexels\.com/.test(src) ? src.replace(/([?&])w=\d+/, `$1w=${w}`).replace(/^([^?]+)$/, `$1?auto=compress&cs=tinysrgb&w=${w}`) : src);
+const srcset = (src) => (/images\.pexels\.com/.test(src) ? `${sized(src, 480)} 480w, ${sized(src, 800)} 800w, ${sized(src, 1200)} 1200w, ${sized(src, 1800)} 1800w` : '');
+
+function imgTag(im, p, { sizes = '(max-width: 600px) 50vw, 300px', eager = false, cls = '' } = {}) {
+  const set = srcset(im.src);
+  return `<img class="${cls}" src="${esc(sized(im.src, 800))}" ${set ? `srcset="${esc(set)}" sizes="${sizes}"` : ''} alt="${esc(im.alt || p.name)}" ${eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`;
+}
+
+function media(p, { i = 0, hover = false, sizes, eager = false, vt = '' } = {}) {
+  const list = imagesOf(p);
+  const im = list[i];
+  const style = vt ? ` style="view-transition-name:${vt}"` : '';
+  if (!im) return `<div class="ph is-art"${style}>${art(p)}</div>`;
+  const second = hover && list[i + 1] ? imgTag(list[i + 1], p, { sizes, cls: 'alt' }).replace(/alt="[^"]*"/, 'alt=""') : '';
+  return `<div class="ph"${style}>${imgTag(im, p, { sizes, eager })}${second}<span class="ph-art" aria-hidden="true">${art(p)}</span></div>`;
+}
+
+// load/error nie bubblują — łapiemy je w fazie capture dla wszystkich zdjęć w sklepie
+document.addEventListener('load', (e) => {
+  if (e.target.tagName === 'IMG' && !e.target.classList.contains('alt')) e.target.closest('.ph')?.classList.add('is-loaded');
+}, true);
+document.addEventListener('error', (e) => {
+  if (e.target.tagName !== 'IMG') return;
+  if (e.target.classList.contains('alt')) { e.target.remove(); return; }
+  e.target.closest('.ph')?.classList.add('is-error');
+}, true);
+function settleImages(root) {
+  root.querySelectorAll('.ph img:not(.alt)').forEach((img) => {
+    if (!img.complete) return;
+    img.closest('.ph').classList.add(img.naturalWidth ? 'is-loaded' : 'is-error');
+  });
+}
+
+// ───────────── Ruch: przejścia, pojawianie się, licznik ─────────────
+
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const revealer = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    e.target.classList.add('in');
+    revealer.unobserve(e.target);
+    if (e.target.dataset.count) countUp(e.target);
+    e.target.querySelectorAll('[data-count]').forEach(countUp);
+  }
+}, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 }) : null;
+
+function observeReveals(root) {
+  if (!revealer || reducedMotion()) { root.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('in')); return; }
+  document.documentElement.classList.add('rv');
+  root.querySelectorAll('[data-reveal]:not(.in)').forEach((el) => revealer.observe(el));
+}
+
+function countUp(el) {
+  const to = Number(el.dataset.count);
+  if (!to || el.dataset.counted) return;
+  el.dataset.counted = '1';
+  if (reducedMotion()) { el.textContent = to; return; }
+  const t0 = performance.now();
+  const step = (t) => {
+    const k = Math.min(1, (t - t0) / 900);
+    el.textContent = Math.round(to * (1 - (1 - k) ** 3));
+    if (k < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// Nagłówek zmniejsza się po przewinięciu
+let scrollTick = false;
+window.addEventListener('scroll', () => {
+  if (scrollTick) return;
+  scrollTick = true;
+  requestAnimationFrame(() => { document.body.classList.toggle('scrolled', window.scrollY > 24); scrollTick = false; });
+}, { passive: true });
+
+// Zdjęcie klikniętej karty „przelatuje” na stronę produktu (View Transitions API)
+document.addEventListener('click', (e) => {
+  const card = e.target.closest('a.card[data-slug], a.cat-tile, a.hero-shot');
+  if (!card || e.metaKey || e.ctrlKey || e.shiftKey || !document.startViewTransition) return;
+  const ph = card.querySelector('.ph');
+  if (ph && card.dataset.slug) { ph.style.viewTransitionName = 'pimg'; state.morph = card.dataset.slug; }
+}, true);
+
 // ───────────── Dane ─────────────
 
 async function loadCatalog() {
   if (window.__CATALOG__) return { ...window.__CATALOG__, source: 'podgląd' };
   try {
-    const [c, p] = await Promise.all([fetch('/api/categories'), fetch('/api/products?limit=100')]);
+    const [c, p] = await Promise.all([fetch('/api/categories'), fetch('/api/products?limit=500')]);
     if (c.ok && p.ok) {
       const [{ categories }, { products }] = await Promise.all([c.json(), p.json()]);
       return { categories, products, source: 'api' };
@@ -208,76 +296,126 @@ const UPLOAD_ACCEPT = '.pdf,.png,.jpg,.jpeg,.svg,.ai,.eps';
 
 // ───────────── Widoki ─────────────
 
-function productCard(p) {
+const badgesHtml = (p) => (p.badges.length ? `<div class="badges">${p.badges.map((b) => `<span class="badge" data-kind="${esc(b)}">${esc(b)}</span>`).join('')}</div>` : '');
+const catName = (slug) => state.categories.find((c) => c.slug === slug)?.name ?? '';
+const ARROW = '<svg class="arr" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function productCard(p, i = 0) {
   const promo = p.compare_at_gr && p.compare_at_gr > p.price_from_gr;
   const multi = p.variants.length > 1;
-  return `<a class="card" href="#p-${esc(p.slug)}">
-    <div class="proof">${p.badges.length ? `<div class="badges">${p.badges.map((b) => `<span class="badge" data-kind="${esc(b)}">${esc(b)}</span>`).join('')}</div>` : ''}${art(p)}</div>
-    <span class="card-name">${esc(p.name)}</span>
-    <p class="card-short">${esc(p.short)}</p>
-    <div class="card-meta">
-      <span class="price">${multi ? '<span class="from">od </span>' : ''}${zl(p.price_from_gr)}${promo ? `<s>${zl(p.compare_at_gr)}</s>` : ''}</span>
-      <span class="tag">${esc(typeTag(p))}</span>
+  return `<a class="card" href="#p-${esc(p.slug)}" data-slug="${esc(p.slug)}" data-reveal style="--i:${i % 4}">
+    <div class="proof card-media">${badgesHtml(p)}${media(p, { hover: true, sizes: '(max-width: 600px) 46vw, (max-width: 1100px) 30vw, 280px' })}
+      <span class="card-cta">Zobacz produkt ${ARROW}</span></div>
+    <div class="card-body">
+      <span class="card-cat">${esc(catName(p.category))}</span>
+      <span class="card-name">${esc(p.name)}</span>
+      <p class="card-short">${esc(p.short)}</p>
+      <div class="card-meta">
+        <span class="price">${multi ? '<span class="from">od </span>' : ''}${zl(p.price_from_gr)}${promo ? `<s>${zl(p.compare_at_gr)}</s>` : ''}</span>
+        <span class="tag">${esc(typeTag(p))}</span>
+      </div>
     </div>
   </a>`;
 }
 
+const pick = (...slugs) => slugs.map((s) => state.bySlug[s]).filter(Boolean);
+const withImage = (list) => list.find((p) => imagesOf(p).length) ?? list[0];
+
 function renderHome() {
   const best = state.products.filter((p) => p.badges.length).slice(0, 4);
-  const featured = state.bySlug['wizytowki-standard'] ?? state.products[0];
+  const more = state.products.filter((p) => !p.badges.length && imagesOf(p).length).slice(0, 8 - best.length);
+  const shots = pick('wizytowki-standard', 'kubek-ceramiczny-z-logo', 'roll-up-85x200');
+  const hero = shots.length === 3 ? shots : state.products.slice(0, 3);
   const counts = Object.fromEntries(state.categories.map((c) => [c.slug, state.products.filter((p) => p.category === c.slug)]));
+  const minDays = Math.min(...state.products.filter((p) => p.type === 'physical').map((p) => p.lead_time_days));
+  const words = ['Wizytówki', 'Roll-upy', 'Kubki z logo', 'Ulotki', 'Ścianki targowe', 'Torby z nadrukiem', 'Szablony do social mediów', 'Projekt logo', 'Naklejki', 'Beach flagi'];
+  const audiences = [
+    { title: 'Biura i firmy usługowe', text: 'Spójny komplet na pierwsze spotkanie: wizytówki, papier firmowy i teczka na ofertę.', img: pick('papier-firmowy-a4')[0], links: pick('wizytowki-standard', 'papier-firmowy-a4', 'teczki-ofertowe-a4') },
+    { title: 'Targi i eventy', text: 'Stoisko widoczne z końca hali — roll-up, ścianka tekstylna i flaga przed wejściem.', img: pick('scianka-tekstylna-3x225')[0], links: pick('roll-up-85x200', 'scianka-tekstylna-3x225', 'flaga-reklamowa-beach-flag') },
+    { title: 'Marki w social mediach', text: 'Gotowe szablony postów, kalendarz treści i audyt wizytówki Google na start.', img: pick('pakiet-30-postow-instagram')[0], links: pick('pakiet-30-postow-instagram', 'kalendarz-tresci-2027', 'audyt-profilu-google') }
+  ];
   return `
   <section class="hero">
     <div class="hero-copy">
-      <p class="eyebrow">Druk · gadżety · szablony · usługi</p>
-      <h1 class="display">Wykuwamy markę, <em>którą widać.</em></h1>
-      <p class="lead">Wizytówki, roll-upy, kubki z logo i gotowe szablony do social mediów. Wgrywasz plik albo zamawiasz projekt, akceptujesz podgląd, a my drukujemy i wysyłamy Paczkomatem.</p>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="#kategoria-druk-firmowy">Zobacz druk firmowy</a>
-        <a class="btn" href="#wszystkie">Cały asortyment · ${state.products.length}</a>
+      <p class="eyebrow hero-in" style="--d:0">Drukarnia i studio dla małych firm</p>
+      <h1 class="display"><span class="hero-in" style="--d:1">Wykuwamy markę,</span> <em class="hero-in" style="--d:2">którą widać.</em></h1>
+      <p class="lead hero-in" style="--d:3">Wizytówki, roll-upy, kubki z logo i gotowe szablony do social mediów. Wgrywasz plik albo zamawiasz projekt, akceptujesz podgląd, a my drukujemy i wysyłamy Paczkomatem.</p>
+      <div class="hero-actions hero-in" style="--d:4">
+        <a class="btn btn-primary btn-lg" href="#wszystkie">Zobacz asortyment ${ARROW}</a>
+        <a class="btn btn-lg" href="#kategoria-druk-firmowy">Druk firmowy</a>
       </div>
-      <div class="hero-note"><span>kreda 350 g/m²</span><span>4+4 CMYK</span><span>wysyłka w 3 dni robocze</span></div>
+      <dl class="hero-stats hero-in" style="--d:5">
+        <div><dt>produktów</dt><dd data-count="${state.products.length}">${state.products.length}</dd></div>
+        <div><dt>kategorii</dt><dd data-count="${state.categories.length}">${state.categories.length}</dd></div>
+        <div><dt>dni do wysyłki</dt><dd>od <span data-count="${minDays}">${minDays}</span></dd></div>
+      </dl>
     </div>
-    <a class="hero-sheet" href="#p-${esc(featured.slug)}" aria-label="${esc(featured.name)}">
-      <div class="proof">${art(featured, 'hero')}</div>
-    </a>
+    <div class="hero-stage" aria-label="Wybrane produkty">
+      ${hero.map((p, i) => `<a class="hero-shot shot-${i + 1} proof" href="#p-${esc(p.slug)}" data-slug="${esc(p.slug)}" style="--d:${i + 2}">
+        ${media(p, { sizes: i === 0 ? '(max-width: 900px) 80vw, 420px' : '(max-width: 900px) 45vw, 260px', eager: i === 0 })}
+        <span class="shot-label"><b>${esc(p.name)}</b><span>od ${zl(p.price_from_gr)}</span></span></a>`).join('')}
+      <span class="reg-mark" aria-hidden="true"></span>
+    </div>
   </section>
 
+  <div class="marquee" aria-hidden="true"><div class="marquee-track">
+    ${[0, 1].map(() => `<span>${words.map((w) => `<b>${w}</b><i></i>`).join('')}</span>`).join('')}
+  </div></div>
+
   <section class="section" aria-labelledby="h-cats">
-    <div class="section-head"><h2 class="h2" id="h-cats">Kategorie</h2></div>
+    <div class="section-head" data-reveal><div><p class="eyebrow">01 — Kategorie</p><h2 class="h2" id="h-cats">Wszystko do promocji w jednym miejscu</h2></div><a class="more" href="#wszystkie">Cały asortyment ${ARROW}</a></div>
     <div class="cat-grid">
-      ${state.categories.map((c) => {
+      ${state.categories.map((c, i) => {
         const list = counts[c.slug];
         const from = Math.min(...list.map((p) => p.price_from_gr));
-        return `<a class="cat-tile" href="#kategoria-${esc(c.slug)}">
-          <div class="thumb">${list[0] ? art(list[0]) : ''}</div>
-          <div><span class="h3">${esc(c.name)}</span><p>${esc(c.lead)}</p>
-          <span class="mono">${list.length} ${plural(list.length, 'produkt', 'produkty', 'produktów')} · od ${zl(from)}</span></div>
+        const cover = withImage(list);
+        return `<a class="cat-tile" href="#kategoria-${esc(c.slug)}" data-reveal style="--i:${i % 3}">
+          ${cover ? media(cover, { i: 0, sizes: '(max-width: 600px) 92vw, (max-width: 900px) 46vw, 380px' }) : ''}
+          <div class="cat-body"><span class="cat-count mono">${list.length} ${plural(list.length, 'produkt', 'produkty', 'produktów')} · od ${zl(from)}</span>
+          <span class="h3">${esc(c.name)}</span><p>${esc(c.lead)}</p><span class="cat-go">${ARROW}</span></div>
         </a>`;
       }).join('')}
     </div>
   </section>
 
   <section class="section" aria-labelledby="h-best">
-    <div class="section-head"><h2 class="h2" id="h-best">Najczęściej wybierane</h2><a href="#wszystkie">Wszystkie produkty</a></div>
-    <div class="grid">${best.map(productCard).join('')}</div>
+    <div class="section-head" data-reveal><div><p class="eyebrow">02 — Polecane</p><h2 class="h2" id="h-best">Najczęściej wybierane</h2></div><a class="more" href="#wszystkie">Wszystkie produkty ${ARROW}</a></div>
+    <div class="grid">${[...best, ...more].map(productCard).join('')}</div>
+  </section>
+
+  <section class="section" aria-labelledby="h-for">
+    <div class="section-head" data-reveal><div><p class="eyebrow">03 — Dla kogo</p><h2 class="h2" id="h-for">Zestawy pod konkretną potrzebę</h2></div></div>
+    <div class="aud-grid">
+      ${audiences.map((a, i) => `<article class="aud" data-reveal style="--i:${i}">
+        <div class="aud-media">${a.img ? media(a.img, { i: imagesOf(a.img).length > 1 ? 1 : 0, sizes: '(max-width: 900px) 92vw, 380px' }) : ''}</div>
+        <div class="aud-body"><h3 class="h3">${a.title}</h3><p>${a.text}</p>
+        <ul class="aud-links">${a.links.map((p) => `<li><a href="#p-${esc(p.slug)}"><span>${esc(p.name)}</span><span class="mono">od ${zl(p.price_from_gr)}</span></a></li>`).join('')}</ul></div>
+      </article>`).join('')}
+    </div>
   </section>
 
   <section class="section" aria-labelledby="h-how">
-    <div class="section-head"><h2 class="h2" id="h-how">Jak powstaje zamówienie</h2></div>
-    <ol class="steps">
-      <li><span class="h3">Wybierasz produkt</span><p>Nakład, papier, kolor lub rozmiar. Cena przelicza się od razu.</p></li>
-      <li><span class="h3">Wgrywasz projekt</span><p>Twój PDF, logo do nadruku albo zamówiony u nas projekt.</p></li>
-      <li><span class="h3">Akceptujesz podgląd</span><p>Przy produktach z logo dostajesz mailem proof do zatwierdzenia.</p></li>
-      <li><span class="h3">Drukujemy i wysyłamy</span><p>Paczkomat, kurier albo link do pobrania przy produktach cyfrowych.</p></li>
+    <div class="section-head" data-reveal><div><p class="eyebrow">04 — Proces</p><h2 class="h2" id="h-how">Jak powstaje zamówienie</h2></div></div>
+    <ol class="steps" data-reveal>
+      <li style="--i:0"><span class="h3">Wybierasz produkt</span><p>Nakład, papier, kolor lub rozmiar. Cena przelicza się od razu.</p></li>
+      <li style="--i:1"><span class="h3">Wgrywasz projekt</span><p>Twój PDF, logo do nadruku albo zamówiony u nas projekt.</p></li>
+      <li style="--i:2"><span class="h3">Akceptujesz podgląd</span><p>Przy produktach z logo dostajesz mailem proof do zatwierdzenia.</p></li>
+      <li style="--i:3"><span class="h3">Drukujemy i wysyłamy</span><p>Paczkomat, kurier albo link do pobrania przy produktach cyfrowych.</p></li>
     </ol>
+  </section>
+
+  <section class="cta-band" data-reveal>
+    <div><p class="eyebrow">Nie masz projektu?</p><h2 class="h2">Zaprojektujemy go za Ciebie.</h2>
+    <p>Logo, ulotka albo cały brandbook — grafik przygotuje projekt, a Ty dostaniesz pliki gotowe do druku i do sieci.</p></div>
+    <div class="cta-actions"><a class="btn btn-primary btn-lg" href="#kategoria-uslugi">Usługi projektowe ${ARROW}</a><a class="btn btn-ghost btn-lg" href="#p-karta-podarunkowa">Karta podarunkowa</a></div>
   </section>
 
   <section class="section" aria-label="Dostawa i płatności">
     <div class="facts">
-      <div class="fact"><span class="h3">Dostawa od ${zl(SHIPPING.paczkomat.price_gr)}</span><p>Paczkomat InPost lub kurier. Od ${zl(FREE_SHIPPING_GR)} wysyłka gratis.</p></div>
-      <div class="fact"><span class="h3">Cyfrowe od ręki</span><p>Szablony i karty podarunkowe przychodzą mailem zaraz po płatności.</p></div>
-      <div class="fact"><span class="h3">BLIK, karta, Przelewy24</span><p>W wersji demonstracyjnej płacisz testowym kodem, bez prawdziwych pieniędzy.</p></div>
+      <div class="fact" data-reveal style="--i:0">${ICON.truck}<span class="h3">Dostawa od ${zl(SHIPPING.paczkomat.price_gr)}</span><p>Paczkomat InPost lub kurier. Od ${zl(FREE_SHIPPING_GR)} wysyłka gratis.</p></div>
+      <div class="fact" data-reveal style="--i:1">${ICON.mail}<span class="h3">Cyfrowe od ręki</span><p>Szablony i karty podarunkowe przychodzą mailem zaraz po płatności.</p></div>
+      <div class="fact" data-reveal style="--i:2">${ICON.card}<span class="h3">BLIK, karta, Przelewy24</span><p>W wersji demonstracyjnej płacisz testowym kodem, bez prawdziwych pieniędzy.</p></div>
+      <div class="fact" data-reveal style="--i:3">${ICON.back}<span class="h3">14 dni na zwrot</span><p>Dla produktów bez personalizacji. Reklamację rozpatrujemy w 14 dni.</p></div>
     </div>
   </section>`;
 }
@@ -309,7 +447,7 @@ function listing({ title, lead, crumbs, products }) {
       </select>
     </label>
   </div>
-  ${sorted.length ? `<div class="grid">${sorted.map(productCard).join('')}</div>`
+  ${sorted.length ? `<div class="grid">${sorted.map((p, i) => productCard(p, i)).join('')}</div>`
     : `<div class="empty"><p class="h3">Nic nie pasuje do „${esc(state.query)}”.</p><p class="muted">Spróbuj krótszego słowa, np. „kubek” albo „roll”.</p><a class="btn" href="#wszystkie">Pokaż wszystkie produkty</a></div>`}`;
 }
 
@@ -328,6 +466,8 @@ const ICON = {
   clock: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   upload: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 15v4h14v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M4 12h11a5 5 0 0 1 0 10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m8 12.5 2.6 2.5L16 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  card: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M7 15h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
   mail: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>'
 };
 
@@ -359,11 +499,13 @@ function renderProduct(p) {
   <div class="crumbs" style="margin-bottom: var(--s-5)"><a href="#start">Start</a><span>/</span><a href="#kategoria-${esc(cat.slug)}">${esc(cat.name)}</a><span>/</span><span>${esc(p.name)}</span></div>
   <article class="pdp">
     <div class="pdp-media">
-      <div class="proof">${p.badges.length ? `<div class="badges">${p.badges.map((b) => `<span class="badge" data-kind="${esc(b)}">${esc(b)}</span>`).join('')}</div>` : ''}${art(p, 'hero')}</div>
-      <p class="caption">Ilustracja poglądowa · zdjęcia produktów dojdą z R2 w Etapie 3</p>
+      <div class="proof gallery-main" id="g-main">${badgesHtml(p)}${media(p, { sizes: '(max-width: 900px) 100vw, 620px', eager: true, vt: state.morph === p.slug ? 'pimg' : '' })}</div>
+      ${imagesOf(p).length > 1 ? `<div class="thumbs" role="group" aria-label="Zdjęcia produktu">${imagesOf(p).map((im, i) => `<button type="button" class="thumb" data-g="${i}" aria-pressed="${i === 0}" aria-label="Zdjęcie ${i + 1} z ${imagesOf(p).length}"><span class="ph">${imgTag(im, p, { sizes: '96px' }).replace(/alt="[^"]*"/, 'alt=""')}<span class="ph-art" aria-hidden="true">${art(p)}</span></span></button>`).join('')}</div>` : ''}
+      <p class="caption">${imagesOf(p).length ? (p.personalizable ? 'Zdjęcie poglądowe — gotowy produkt z Twoim logo zobaczysz na podglądzie przed drukiem.' : 'Zdjęcie poglądowe.') : 'Ilustracja poglądowa.'}</p>
     </div>
     <form class="pdp-buy" id="buy-form" novalidate>
       <div style="display:grid;gap:var(--s-3)">
+        <a class="pdp-cat" href="#kategoria-${esc(cat.slug)}">${esc(cat.name)}</a>
         <h1>${esc(p.name)}</h1>
         <p class="lead" style="font-size:16px">${esc(p.short)}</p>
       </div>
@@ -416,7 +558,11 @@ function renderProduct(p) {
   ${related.length ? `<section class="section" aria-labelledby="h-rel">
     <div class="section-head"><h2 class="h2" id="h-rel">Z tej samej kategorii</h2><a href="#kategoria-${esc(cat.slug)}">${esc(cat.name)}</a></div>
     <div class="grid">${related.map(productCard).join('')}</div>
-  </section>` : ''}`;
+  </section>` : ''}
+  <div class="buy-bar" id="buy-bar" aria-hidden="true">
+    <div><span class="buy-bar-name">${esc(p.name)}</span><span class="price" id="bb-price"></span></div>
+    <button class="btn btn-primary" type="button" id="bb-add" tabindex="-1">Do koszyka</button>
+  </div>`;
 }
 
 function bindProduct(p) {
@@ -445,9 +591,31 @@ function bindProduct(p) {
     skuEl.textContent = v.sku;
     addBtn.disabled = !v.available;
     addBtn.textContent = v.available ? `Dodaj do koszyka · ${zl(v.price_gr * n)}` : 'Niedostępny';
+    bbPrice.textContent = zl(v.price_gr * n);
+    bbAdd.disabled = !v.available;
   };
   form.addEventListener('change', sync);
   qty.addEventListener('input', sync);
+  bindGallery(p);
+  const bar = document.getElementById('buy-bar');
+  const bbPrice = document.getElementById('bb-price');
+  const bbAdd = document.getElementById('bb-add');
+  bbAdd.addEventListener('click', () => form.requestSubmit());
+  // pasek „Do koszyka” na telefonie, gdy główny przycisk zniknie u góry ekranu
+  if (state.buyBarSync) window.removeEventListener('scroll', state.buyBarSync);
+  let ticking = false;
+  state.buyBarSync = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      ticking = false;
+      if (!addBtn.isConnected) { window.removeEventListener('scroll', state.buyBarSync); return; }
+      const show = addBtn.getBoundingClientRect().bottom < 0;
+      bar.classList.toggle('show', show);
+      bar.setAttribute('aria-hidden', String(!show));
+    });
+  };
+  window.addEventListener('scroll', state.buyBarSync, { passive: true });
   form.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
     const v = selected();
     qty.value = String(Math.min(Math.max(1, maxQty(v)), Math.max(1, (Number(qty.value) || 1) + Number(b.dataset.step))));
@@ -477,13 +645,128 @@ function bindProduct(p) {
     const v = selected();
     if (!v.available) return;
     run(addBtn, async () => {
-      setCart(await state.store.addItem(v.id, Math.max(1, Number(qty.value) || 1), state.pendingUpload?.id));
-      toast(`Dodano: ${p.name}${p.variants.length > 1 ? `, ${v.label}` : ''}${state.pendingUpload ? ' z plikiem' : ''}`);
-      if (fileInput) { fileInput.value = ''; state.pendingUpload = null; document.getElementById('pdp-file-status').textContent = 'Dodano. Kolejną sztukę z innym plikiem możesz dodać osobno.'; }
+      const here = location.hash;
+      const cart = await state.store.addItem(v.id, Math.max(1, Number(qty.value) || 1), state.pendingUpload?.id);
+      if (location.hash === here) await flyToCart(document.querySelector('#g-main .ph'));
+      setCart(cart);
+      // klient mógł w międzyczasie przejść na inną stronę — wtedy tylko krótki komunikat
+      if (location.hash === here) openDrawer({ product: p, variant: v, withFile: !!state.pendingUpload });
+      else toast(`Dodano: ${p.name}`);
+      if (fileInput?.isConnected) { fileInput.value = ''; state.pendingUpload = null; document.getElementById('pdp-file-status').textContent = 'Dodano. Kolejną sztukę z innym plikiem możesz dodać osobno.'; }
     }).then(sync);
   });
   sync();
 }
+
+
+function bindGallery(p) {
+  const main = document.querySelector('#g-main .ph');
+  const list = imagesOf(p);
+  document.querySelectorAll('.thumb').forEach((b) => b.addEventListener('click', () => {
+    const im = list[Number(b.dataset.g)];
+    const img = main?.querySelector('img');
+    if (!img || !im) return;
+    document.querySelectorAll('.thumb').forEach((t) => t.setAttribute('aria-pressed', String(t === b)));
+    main.classList.remove('is-loaded', 'is-error');
+    img.removeAttribute('srcset');
+    img.src = sized(im.src, 1200);
+    const set = srcset(im.src);
+    if (set) img.srcset = set;
+    img.alt = im.alt || p.name;
+  }));
+  // lupa: na myszce zdjęcie powiększa się w miejscu kursora
+  if (!main?.querySelector('img') || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  main.classList.add('zoomable');
+  main.addEventListener('pointermove', (e) => {
+    const r = main.getBoundingClientRect();
+    main.style.setProperty('--zx', `${((e.clientX - r.left) / r.width) * 100}%`);
+    main.style.setProperty('--zy', `${((e.clientY - r.top) / r.height) * 100}%`);
+    main.classList.add('zooming');
+  });
+  main.addEventListener('pointerleave', () => main.classList.remove('zooming'));
+}
+
+// Miniatura zdjęcia „leci” do koszyka w nagłówku
+function flyToCart(from) {
+  const target = document.getElementById('cart-link');
+  if (!from || !target || reducedMotion() || !from.animate) return Promise.resolve();
+  const a = from.getBoundingClientRect();
+  const b = target.getBoundingClientRect();
+  const ghost = from.cloneNode(true);
+  ghost.removeAttribute('style');
+  ghost.classList.add('fly');
+  Object.assign(ghost.style, { left: `${a.left}px`, top: `${a.top}px`, width: `${a.width}px`, height: `${a.height}px` });
+  document.body.append(ghost);
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+  const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+  const anim = ghost.animate([
+    { transform: 'translate(0, 0) scale(1)', opacity: 1, borderRadius: '4px' },
+    { transform: `translate(${dx * 0.55}px, ${dy * 0.3 - 60}px) scale(.45)`, opacity: 0.95, borderRadius: '24px', offset: 0.55 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.06)`, opacity: 0.3, borderRadius: '50%' }
+  ], { duration: 720, easing: 'cubic-bezier(.45,.05,.35,1)' });
+  return anim.finished.catch(() => {}).then(() => {
+    ghost.remove();
+    cartCount.classList.remove('bump');
+    void cartCount.offsetWidth;
+    cartCount.classList.add('bump');
+  });
+}
+
+// ───────────── Szuflada koszyka ─────────────
+
+const drawer = document.getElementById('cart-drawer');
+
+function drawerHtml(added) {
+  const cart = state.cart;
+  const lines = cart?.lines ?? [];
+  const t = cart?.totals;
+  const head = `<div class="drawer-head"><h2 class="h3" id="drawer-title">${added ? 'Dodano do koszyka' : 'Koszyk'} <span class="mono muted">${t?.items_count ?? 0}</span></h2>
+    <button type="button" class="drawer-x" data-close aria-label="Zamknij koszyk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button></div>`;
+  if (!lines.length) {
+    return `${head}<div class="drawer-empty"><p class="h3">Koszyk jest pusty.</p><p class="muted">Zajrzyj do najczęściej wybieranych produktów.</p><a class="btn btn-primary" href="#wszystkie" data-close>Przeglądaj produkty</a></div>`;
+  }
+  const missing = t.shipping ? t.missing_for_free_shipping_gr : 0;
+  return `${head}
+    ${added ? `<p class="drawer-added">${ICON.check}<span><b>${esc(added.product.name)}</b>${added.product.variants.length > 1 ? `, ${esc(added.variant.label)}` : ''}${added.withFile ? ' — z plikiem' : ''}</span></p>` : ''}
+    <ul class="drawer-lines">${lines.map((l) => `<li class="${added && l.variant.id === added.variant.id ? 'is-new' : ''}">
+      <a href="#p-${esc(l.product.slug)}" class="drawer-thumb" data-close tabindex="-1" aria-hidden="true">${media(l.product, { sizes: '72px' })}</a>
+      <div><a href="#p-${esc(l.product.slug)}" data-close>${esc(l.product.name)}</a><span class="small">${esc(l.variant.label)} · ${l.qty} szt.</span></div>
+      <span class="price">${zl(l.line_total_gr)}</span></li>`).join('')}</ul>
+    <div class="drawer-foot">
+      ${t.shipping ? `<div class="ship-meter"><p class="small">${missing ? `Brakuje <b>${zl(missing)}</b> do darmowej dostawy` : '<b>Masz darmową dostawę</b>'}</p>
+        <div class="progress" aria-hidden="true"><i style="width:${Math.min(100, ((FREE_SHIPPING_GR - missing) / FREE_SHIPPING_GR) * 100)}%"></i></div></div>` : ''}
+      <dl><dt>Razem${t.shipping?.price_gr ? ' z dostawą' : ''}</dt><dd class="price">${zl(t.total_gr)}</dd></dl>
+      <a class="btn btn-primary btn-lg" href="#kasa" data-close>Do kasy ${ARROW}</a>
+      <a class="btn" href="#koszyk" data-close>Zobacz koszyk</a>
+    </div>`;
+}
+
+function openDrawer(added = null) {
+  if (!drawer?.showModal) { toast(added ? `Dodano: ${added.product.name}` : 'Koszyk'); return; }
+  drawer.innerHTML = `<div class="drawer-in">${drawerHtml(added)}</div>`;
+  settleImages(drawer);
+  drawer.classList.remove('closing');
+  if (!drawer.open) drawer.showModal();
+  drawer.querySelector('.drawer-x').focus();
+}
+function closeDrawer() {
+  if (!drawer?.open || drawer.classList.contains('closing')) return;
+  if (reducedMotion()) { drawer.close(); return; }
+  drawer.classList.add('closing');
+  setTimeout(() => { drawer.classList.remove('closing'); drawer.close(); }, 260);
+}
+drawer?.addEventListener('click', (e) => {
+  if (e.target === drawer || e.target.closest('[data-close]')) {
+    if (e.target.closest('a[data-close]')) { drawer.close(); return; } // przejście linkiem — bez animacji zamykania
+    e.preventDefault(); closeDrawer();
+  }
+});
+drawer?.addEventListener('cancel', (e) => { e.preventDefault(); closeDrawer(); });
+document.getElementById('cart-link').addEventListener('click', (e) => {
+  if (['#koszyk', '#kasa'].includes(location.hash) || !drawer?.showModal) return;
+  e.preventDefault();
+  openDrawer();
+});
 
 function renderCart() {
   const head = `<div class="page-head"><div class="crumbs"><a href="#start">Start</a><span>/</span><span>Koszyk</span></div><h1 class="h2">Koszyk</h1></div>`;
@@ -499,7 +782,7 @@ function renderCart() {
   <div class="cart">
     <div class="cart-items">
       ${cart.lines.map((l) => `<div class="cart-item" data-line="${l.id}">
-        <a href="#p-${esc(l.product.slug)}" class="proof" tabindex="-1" aria-hidden="true">${art(l.product)}</a>
+        <a href="#p-${esc(l.product.slug)}" class="proof" tabindex="-1" aria-hidden="true">${media(l.product, { sizes: '120px' })}</a>
         <div>
           <h3><a href="#p-${esc(l.product.slug)}">${esc(l.product.name)}</a></h3>
           <p class="small">${esc(l.variant.label)} · <span class="mono">${esc(l.variant.sku)}</span> · ${zl(l.variant.price_gr)} / szt.</p>
@@ -1263,6 +1546,7 @@ let toastTimer;
 function toast(text, withLink = true) {
   toastEl.innerHTML = `<span>${esc(text)}</span>${withLink ? '<a href="#koszyk">Zobacz koszyk</a>' : ''}`;
   toastEl.hidden = false;
+  toastEl.classList.remove('pop'); void toastEl.offsetWidth; toastEl.classList.add('pop');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { toastEl.hidden = true; }, 3500);
 }
@@ -1329,6 +1613,8 @@ function render() {
     sortSel.addEventListener('change', () => { state.sort = sortSel.value; render(); });
   }
   after?.();
+  settleImages(view);
+  observeReveals(view);
   mountTurnstile();
 }
 
@@ -1361,8 +1647,32 @@ function resetTurnstile(form) {
 async function onRoute() {
   // koszyk zawsze świeży z serwera (stany i ceny mogły się zmienić)
   if (location.hash === '#koszyk') { try { setCart(await state.store.getCart()); } catch { /* pokażemy ostatni znany */ } }
-  render();
-  window.scrollTo({ top: 0 });
+  if (drawer?.open) drawer.close();
+  const leavingProduct = state.current?.startsWith('p-') ? state.current.slice(2) : null;
+  const update = () => {
+    render();
+    // powrót z karty produktu: zdjęcie wraca na swoją kartę w liście
+    if (leavingProduct && !state.morph) {
+      const back = view.querySelector(`.card[data-slug="${CSS.escape(leavingProduct)}"] .ph`);
+      if (back) back.style.viewTransitionName = 'pimg';
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+  if (document.startViewTransition && !reducedMotion() && state.current !== undefined) {
+    if (leavingProduct && !state.morph) view.querySelector('#g-main .ph')?.style.setProperty('view-transition-name', 'pimg');
+    const t = document.startViewTransition(update);
+    t.finished.finally(() => {
+      state.morph = null;
+      document.querySelectorAll('[style*="view-transition-name"]').forEach((el) => el.style.removeProperty('view-transition-name'));
+    });
+  } else {
+    update();
+    state.morph = null;
+    view.classList.remove('view-in');
+    void view.offsetWidth;
+    view.classList.add('view-in');
+  }
+  state.current = decodeURIComponent(location.hash.slice(1)) || 'start';
   view.focus({ preventScroll: true });
 }
 
@@ -1378,7 +1688,7 @@ window.addEventListener('hashchange', onRoute);
 
 // ───────────── Start ─────────────
 
-view.innerHTML = '<p class="muted">Ładuję katalog…</p>';
+view.innerHTML = `<div class="boot" aria-label="Ładuję katalog"><div class="sk sk-hero"></div><div class="grid">${'<div class="sk sk-card"></div>'.repeat(4)}</div></div>`;
 loadCatalog().then(async (data) => {
   state.categories = [...data.categories].sort((a, b) => a.sort - b.sort);
   state.products = data.products;
@@ -1393,6 +1703,7 @@ loadCatalog().then(async (data) => {
   setCart(cart);
   setCustomer(customer);
   render();
+  state.current = decodeURIComponent(location.hash.slice(1)) || 'start';
 }).catch((err) => {
   console.error(err);
   view.innerHTML = '<div class="empty"><h1 class="h2">Nie udało się wczytać katalogu.</h1><p class="muted">Sprawdź połączenie i odśwież stronę.</p></div>';

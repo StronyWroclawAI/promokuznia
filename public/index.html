@@ -41,17 +41,30 @@
 <main id="view" class="wrap" tabindex="-1"></main>
 
 <footer class="site-footer">
+  <div class="cmyk-bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <div class="wrap footer-grid">
-    <div>
+    <div class="footer-brand">
       <p class="brand-name">Promo<b>Kuźnia</b></p>
-      <p class="muted">Materiały marketingowe dla małych firm. Projekt portfolio Strony AI Wrocław.</p>
+      <p class="muted">Druk firmowy, gadżety z logo, systemy wystawiennicze i szablony dla małych firm. Wgrywasz plik — akceptujesz podgląd — dostajesz paczkę.</p>
+      <p class="footer-pay"><span>BLIK</span><span>Karta</span><span>Przelewy24</span><span>InPost</span></p>
+    </div>
+    <div>
+      <p class="eyebrow">Sklep</p>
+      <ul class="plain">
+        <li><a href="#kategoria-druk-firmowy">Druk firmowy</a></li>
+        <li><a href="#kategoria-gadzety-z-logo">Gadżety z logo</a></li>
+        <li><a href="#kategoria-systemy-wystawiennicze">Systemy wystawiennicze</a></li>
+        <li><a href="#kategoria-produkty-cyfrowe">Produkty cyfrowe</a></li>
+        <li><a href="#kategoria-uslugi">Usługi</a></li>
+      </ul>
     </div>
     <div>
       <p class="eyebrow">Zakupy</p>
       <ul class="plain">
-        <li>Dostawa: Paczkomat InPost, kurier, odbiór osobisty</li>
-        <li>Płatności: BLIK, karta, Przelewy24 (tryb testowy)</li>
+        <li>Paczkomat InPost, kurier, odbiór osobisty</li>
+        <li>BLIK, karta, Przelewy24 (tryb testowy)</li>
         <li>Darmowa dostawa od 300 zł</li>
+        <li><a href="#konto">Moje konto i zamówienia</a></li>
       </ul>
     </div>
     <div>
@@ -63,8 +76,10 @@
       </ul>
     </div>
   </div>
+  <div class="wrap footer-bottom"><span>© 2026 PromoKuźnia — sklep demonstracyjny, projekt portfolio Strony AI Wrocław.</span><span>Zdjęcia poglądowe: Pexels.</span></div>
 </footer>
 
+<dialog class="drawer" id="cart-drawer" aria-labelledby="drawer-title"></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <!--/APP-->
 <script src="/assets/app.js" type="module"></script>

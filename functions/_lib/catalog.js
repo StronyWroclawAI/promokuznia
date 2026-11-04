@@ -7,7 +7,10 @@ const parse = (s, fallback) => {
   try { return s ? JSON.parse(s) : fallback; } catch { return fallback; }
 };
 
-function toProduct(row, variants, lowest30) {
+// Zdjęcie z R2 ma src = /api/images/<klucz>; zdjęcie z zewnątrz — pełny adres URL
+export const imageView = (im) => ({ id: im.id, src: im.src || `/api/images/${im.r2_key}`, alt: im.alt });
+
+export function toProduct(row, variants, lowest30, images = []) {
   const dims = row.length_cm ? [row.length_cm, row.width_cm, row.height_cm] : null;
   return {
     id: row.id,
@@ -25,6 +28,7 @@ function toProduct(row, variants, lowest30) {
     shipping_class: row.shipping_class,
     parcel_size: row.parcel_size,
     art: { shape: row.art_shape, tone: row.art_tone },
+    images: images.map(imageView),
     specs: parse(row.specs_json, []),
     badges: parse(row.badges_json, []),
     compare_at_gr: row.compare_at_gr,
@@ -93,24 +97,29 @@ export async function listProducts(db, { category, q, type, sort = 'polecane', l
       WHERE ${where.join(' AND ')}
       ORDER BY ${order}
       LIMIT ?`
-  ).bind(...binds, Math.min(Number(limit) || 60, 100)).all();
+  ).bind(...binds, Math.min(Number(limit) || 60, 500)).all();
 
   if (!rows.length) return [];
+  // D1 przyjmuje do 100 parametrów w zapytaniu — przy dużym katalogu pobieramy wszystko i filtrujemy w kodzie
   const ids = rows.map((r) => r.id);
-  const marks = ids.map(() => '?').join(',');
-  const [{ results: variants }, { results: history }] = await db.batch([
-    db.prepare(`SELECT * FROM variants WHERE active = 1 AND product_id IN (${marks}) ORDER BY product_id, sort`).bind(...ids),
+  const many = ids.length > 90;
+  const marks = many ? 'SELECT id FROM products' : ids.map(() => '?').join(',');
+  const idBinds = many ? [] : ids;
+  const [{ results: variants }, { results: history }, { results: images }] = await db.batch([
+    db.prepare(`SELECT * FROM variants WHERE active = 1 AND product_id IN (${marks}) ORDER BY product_id, sort`).bind(...idBinds),
     db.prepare(
       `SELECT v.product_id, h.price_gr, h.valid_from
          FROM price_history h JOIN variants v ON v.id = h.variant_id
         WHERE v.product_id IN (${marks}) AND v.sort = 0`
-    ).bind(...ids)
+    ).bind(...idBinds),
+    db.prepare(`SELECT * FROM product_images WHERE product_id IN (${marks}) ORDER BY product_id, sort, id`).bind(...idBinds)
   ]);
 
   return rows.map((row) => toProduct(
     row,
     variants.filter((v) => v.product_id === row.id),
-    row.compare_at_gr ? lowestBeforeReduction(history.filter((h) => h.product_id === row.id)) : null
+    row.compare_at_gr ? lowestBeforeReduction(history.filter((h) => h.product_id === row.id)) : null,
+    images.filter((im) => im.product_id === row.id)
   ));
 }
 
@@ -120,12 +129,13 @@ export async function getProduct(db, slug) {
       WHERE p.slug = ? AND p.active = 1`
   ).bind(slug).first();
   if (!row) return null;
-  const [{ results: variants }, { results: history }] = await db.batch([
+  const [{ results: variants }, { results: history }, { results: images }] = await db.batch([
     db.prepare('SELECT * FROM variants WHERE product_id = ? AND active = 1 ORDER BY sort').bind(row.id),
     db.prepare(
       `SELECT h.price_gr, h.valid_from FROM price_history h JOIN variants v ON v.id = h.variant_id
         WHERE v.product_id = ? AND v.sort = 0`
-    ).bind(row.id)
+    ).bind(row.id),
+    db.prepare('SELECT * FROM product_images WHERE product_id = ? ORDER BY sort, id').bind(row.id)
   ]);
-  return toProduct(row, variants, row.compare_at_gr ? lowestBeforeReduction(history) : null);
+  return toProduct(row, variants, row.compare_at_gr ? lowestBeforeReduction(history) : null, images);
 }

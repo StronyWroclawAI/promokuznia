@@ -184,3 +184,91 @@ test('InPost: statusy po polsku i „w drodze”', () => {
   assert.equal(isInTransit('collected_from_sender'), true);
   assert.equal(isInTransit('confirmed'), false);
 });
+
+// ───────────── Produkty: Excel i walidacja (Etap 8) ─────────────
+
+import { writeXlsx, readXlsx, readCsv } from '../public/admin/xlsx.js';
+import { rowsToProducts, productToRows, COLUMNS, templateXlsx, pickSheet } from '../public/admin/sheet.js';
+import { normalizeProduct, plan, slugify } from '../functions/_lib/products-admin.js';
+
+const CATS = [{ slug: 'gadzety-z-logo', name: 'Gadżety z logo' }, { slug: 'produkty-cyfrowe', name: 'Produkty cyfrowe' }, { slug: 'karty-podarunkowe', name: 'Karty podarunkowe' }];
+const HEAD = COLUMNS.map((c) => c.header);
+const row = (o) => COLUMNS.map((c) => o[c.key] ?? '');
+
+test('xlsx: zapis i odczyt zachowuje tekst z polskimi znakami, liczby i puste komórki', async () => {
+  const bytes = writeXlsx([{ name: 'Produkty', rows: [['a', 'b', 'c'], ['Żółć & <znaczniki>', 49.9, ''], ['', '', 7]], headerRow: true }]);
+  const [sheet] = await readXlsx(bytes);
+  assert.equal(sheet.name, 'Produkty');
+  assert.deepEqual(sheet.rows[1], ['Żółć & <znaczniki>', 49.9]);
+  assert.deepEqual(sheet.rows[2], ['', '', 7]);
+});
+
+test('szablon ma arkusz Produkty z nagłówkiem, a przykład daje poprawne produkty', async () => {
+  const sheets = await readXlsx(templateXlsx(CATS));
+  assert.deepEqual(sheets.map((s) => s.name), ['Produkty', 'Przykład', 'Instrukcja', 'Słowniki']);
+  assert.equal(pickSheet(sheets).name, 'Produkty');
+  const { products, issues } = rowsToProducts(sheets[1].rows, CATS);
+  assert.equal(issues.length, 0);
+  assert.equal(products.length, 2);
+  assert.equal(products[0].variants.length, 2);
+  for (const p of products) assert.deepEqual(normalizeProduct(p, CATS.map((c) => c.slug)).errors, []);
+});
+
+test('import: wiersze bez danych produktu to kolejne warianty; zł, VAT, tak/nie i specyfikacja', () => {
+  const { products, issues } = rowsToProducts([
+    HEAD,
+    row({ name: 'Kubek emaliowany', category: 'Gadżety z logo', type: 'fizyczny', vat_rate: 0.23, personalizable: 'TAK', weight_g: 800, dims: '30 x 20 x 10', specs: 'Pojemność: 350 ml | Materiał: stal', badges: 'Nowość, Promocja', variant: '10 szt.', price: '349,00 zł', stock: 20 }),
+    row({ variant: '50 szt.', price: 1499 }),
+    row({ name: 'Bon 100', category: 'karty-podarunkowe', type: 'karta podarunkowa', vat_rate: 'zw', variant: '100 zł', price: 100 }),
+    row({ name: 'Zły', category: 'gadzety-z-logo', type: 'fizyczny', variant: 'A', price: 'dużo' })
+  ], CATS);
+  const [kubek, bon, zly] = products;
+  assert.equal(kubek.slug, '');
+  assert.equal(kubek.category, 'gadzety-z-logo');
+  assert.equal(kubek.vat_rate, 23);
+  assert.equal(kubek.personalizable, true);
+  assert.deepEqual(kubek.dims_cm, [30, 20, 10]);
+  assert.deepEqual(kubek.specs, [['Pojemność', '350 ml'], ['Materiał', 'stal']]);
+  assert.deepEqual(kubek.variants.map((v) => [v.label, v.price_gr, v.stock]), [['10 szt.', 34900, 20], ['50 szt.', 149900, null]]);
+  assert.equal(bon.type, 'gift_card');
+  assert.equal(bon.vat_rate, null);
+  assert.equal(normalizeProduct(bon, CATS.map((c) => c.slug)).errors.length, 0);
+  assert.match(issues[0].message, /nie jest liczbą/);
+  assert.ok(zly._warnings.length);
+  assert.ok(normalizeProduct(zly, CATS.map((c) => c.slug)).errors.some((e) => /cena/.test(e)));
+});
+
+test('eksport i ponowny import dają ten sam produkt', () => {
+  const p = { slug: 'kubek-x', name: 'Kubek X', category: 'gadzety-z-logo', type: 'physical', short: 's', description: 'd', vat_rate: 23, personalizable: true, lead_time_days: 5, weight_g: 400, dims_cm: [10, 10, 12], shipping_class: 'paczkomat', parcel_size: 'A', specs: [['A', 'b']], badges: ['Nowość'], compare_at_gr: null, active: true, images: [{ src: 'https://example.com/a.jpg' }], variants: [{ sku: 'PK-1', label: 'biały', price_gr: 3900, stock: 10, active: true }, { sku: 'PK-2', label: 'czarny', price_gr: 4400, stock: null, active: true }] };
+  const [back] = rowsToProducts([HEAD, ...productToRows(p)], CATS).products;
+  assert.equal(back.slug, 'kubek-x');
+  assert.deepEqual(back.variants, [{ label: 'biały', sku: 'PK-1', price_gr: 3900, stock: 10 }, { label: 'czarny', sku: 'PK-2', price_gr: 4400, stock: null }]);
+  assert.deepEqual(back.images, [{ src: 'https://example.com/a.jpg', alt: '' }]);
+});
+
+test('CSV z Arkuszy Google: średnik, cudzysłowy i nowe linie w komórce', () => {
+  const [s] = readCsv('﻿nazwa;opis\n"Kubek; duży";"linia 1\nlinia 2"\n');
+  assert.deepEqual(s.rows[1], ['Kubek; duży', 'linia 1\nlinia 2']);
+});
+
+test('walidacja produktu: slug z polskich znaków, wymagane pola, adresy zdjęć', () => {
+  assert.equal(slugify('Łódka żółta — 100% bawełny'), 'lodka-zolta-100-bawelny');
+  const { errors } = normalizeProduct({ name: 'Torba', category: 'gadzety-z-logo', type: 'physical', images: ['http://niebezpieczny.pl/a.jpg'], variants: [{ label: 'A', price_gr: 1000 }, { label: 'a', price_gr: 1000 }] }, ['gadzety-z-logo']);
+  assert.ok(errors.some((e) => /wagi/.test(e)));
+  assert.ok(errors.some((e) => /https:\/\//.test(e)));
+  assert.ok(errors.some((e) => /tę samą nazwę/.test(e)));
+});
+
+test('plan importu: SKU innego produktu i stan poniżej rezerwacji blokują zapis', () => {
+  const index = {
+    bySlug: new Map([['kubek', { id: 1, slug: 'kubek' }]]), byId: new Map([[1, { id: 1, slug: 'kubek' }]]),
+    variants: [{ id: 10, product_id: 1, sku: 'PK-1', label: 'biały', price_gr: 3900, stock: 10, reserved: 4 }],
+    skuOwner: new Map([['PK-1', 1]])
+  };
+  const base = { name: 'Nowy', category: 'gadzety-z-logo', type: 'digital', variants: [{ sku: 'PK-1', label: 'x', price_gr: 1000 }] };
+  assert.match(plan(normalizeProduct(base, ['gadzety-z-logo']).value, index).errors[0], /innego produktu/);
+  const upd = normalizeProduct({ ...base, slug: 'kubek', name: 'Kubek', variants: [{ sku: 'PK-1', label: 'biały', price_gr: 3900, stock: 2 }] }, ['gadzety-z-logo']).value;
+  const p = plan(upd, index);
+  assert.equal(p.action, 'aktualizacja');
+  assert.match(p.errors[0], /4 szt/);
+});

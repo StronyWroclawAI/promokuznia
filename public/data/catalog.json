@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-02T20:20:27Z",
+  "generated_at": "2026-11-04T22:30:22Z",
   "categories": [
     {
       "id": 1,
@@ -68,6 +68,16 @@
         "shape": "card",
         "tone": "magenta"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/4466176/pexels-photo-4466176.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Stosy białych wizytówek na stole"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8947637/pexels-photo-8947637.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Wizytówki na fakturowanym tle"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -155,6 +165,16 @@
         "shape": "card",
         "tone": "ink"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/4466420/pexels-photo-4466420.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Czarne wizytówki na białym tle"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8489953/pexels-photo-8489953.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Wizytówki na ciemnych kamieniach"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -224,6 +244,16 @@
         "shape": "flyer",
         "tone": "cyan"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/8292889/pexels-photo-8292889.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Ulotki i broszury na biurku"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8526705/pexels-photo-8526705.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Broszury na drewnianym stole"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -297,6 +327,16 @@
         "shape": "flyer",
         "tone": "yellow"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/8526705/pexels-photo-8526705.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Składane broszury na drewnianym stole"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8292889/pexels-photo-8292889.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Ulotki i broszury na biurku"
+        }
+      ],
       "specs": [
         [
           "Format po złożeniu",
@@ -354,6 +394,16 @@
         "shape": "letter",
         "tone": "cyan"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/7598073/pexels-photo-7598073.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Dokumenty firmowe z identyfikacją marki na biurku"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8947692/pexels-photo-8947692.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Notes i wizytówka"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -419,6 +469,16 @@
         "shape": "folder",
         "tone": "magenta"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/5668485/pexels-photo-5668485.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Zestaw teczek na dokumenty"
+        },
+        {
+          "src": "https://images.pexels.com/photos/1764956/pexels-photo-1764956.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Białe teczki na dokumenty"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -484,6 +544,16 @@
         "shape": "sticker",
         "tone": "yellow"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/2902599/pexels-photo-2902599.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Naklejki z nadrukiem"
+        },
+        {
+          "src": "https://images.pexels.com/photos/17567386/pexels-photo-17567386.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Naklejki na laptopie"
+        }
+      ],
       "specs": [
         [
           "Rozmiar",
@@ -549,6 +619,16 @@
         "shape": "mug",
         "tone": "magenta"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/4264049/pexels-photo-4264049.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Biały kubek ceramiczny"
+        },
+        {
+          "src": "https://images.pexels.com/photos/11075707/pexels-photo-11075707.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Kubek na stole"
+        }
+      ],
       "specs": [
         [
           "Pojemność",
@@ -624,6 +704,16 @@
         "shape": "thermo",
         "tone": "ink"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/9292797/pexels-photo-9292797.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Kubek termiczny"
+        },
+        {
+          "src": "https://images.pexels.com/photos/4065905/pexels-photo-4065905.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Kubek w dłoniach"
+        }
+      ],
       "specs": [
         [
           "Pojemność",
@@ -689,6 +779,16 @@
         "shape": "pen",
         "tone": "cyan"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/210660/pexels-photo-210660.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Metalowy długopis na notesie"
+        },
+        {
+          "src": "https://images.pexels.com/photos/7822110/pexels-photo-7822110.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Długopis na biurku"
+        }
+      ],
       "specs": [
         [
           "Korpus",
@@ -762,6 +862,16 @@
         "shape": "lanyard",
         "tone": "magenta"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/8761304/pexels-photo-8761304.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Smycz z identyfikatorem"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8761741/pexels-photo-8761741.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Smycze z nadrukiem"
+        }
+      ],
       "specs": [
         [
           "Szerokość",
@@ -827,6 +937,16 @@
         "shape": "tote",
         "tone": "yellow"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/1214212/pexels-photo-1214212.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Bawełniana torba na zakupy"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8148587/pexels-photo-8148587.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Torba z bawełny"
+        }
+      ],
       "specs": [
         [
           "Wymiar",
@@ -892,6 +1012,16 @@
         "shape": "tshirt",
         "tone": "ink"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/8532616/pexels-photo-8532616.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Koszulka bawełniana"
+        },
+        {
+          "src": "https://images.pexels.com/photos/4066293/pexels-photo-4066293.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Złożone koszulki"
+        }
+      ],
       "specs": [
         [
           "Materiał",
@@ -981,6 +1111,16 @@
         "shape": "notebook",
         "tone": "cyan"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/8586182/pexels-photo-8586182.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Notes A5 z długopisem"
+        },
+        {
+          "src": "https://images.pexels.com/photos/34587/pexels-photo-34587.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Otwarty notes na biurku"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -1046,6 +1186,16 @@
         "shape": "rollup",
         "tone": "magenta"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/7648057/pexels-photo-7648057.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Stoisko rejestracyjne na konferencji"
+        },
+        {
+          "src": "https://images.pexels.com/photos/29708258/pexels-photo-29708258.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Konferencja ze sceną"
+        }
+      ],
       "specs": [
         [
           "Wymiar grafiki",
@@ -1105,6 +1255,16 @@
         "shape": "rollup",
         "tone": "cyan"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/29708258/pexels-photo-29708258.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Konferencja ze sceną i ekranem"
+        },
+        {
+          "src": "https://images.pexels.com/photos/7648057/pexels-photo-7648057.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Stoisko na konferencji"
+        }
+      ],
       "specs": [
         [
           "Wymiar grafiki",
@@ -1162,6 +1322,16 @@
         "shape": "wall",
         "tone": "ink"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/17056964/pexels-photo-17056964.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Sala eventowa z dużym ekranem"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8344905/pexels-photo-8344905.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Uczestnicy konferencji"
+        }
+      ],
       "specs": [
         [
           "Wymiar",
@@ -1219,6 +1389,16 @@
         "shape": "flag",
         "tone": "yellow"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/36624122/pexels-photo-36624122.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Stoisko z flagami na plenerowym festynie"
+        },
+        {
+          "src": "https://images.pexels.com/photos/7648057/pexels-photo-7648057.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Stoisko eventowe"
+        }
+      ],
       "specs": [
         [
           "Kształt",
@@ -1280,6 +1460,16 @@
         "shape": "grid",
         "tone": "magenta"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/5052877/pexels-photo-5052877.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Polubienie zdjęcia na Instagramie w telefonie"
+        },
+        {
+          "src": "https://images.pexels.com/photos/7662057/pexels-photo-7662057.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Telefon w dłoni"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -1335,6 +1525,16 @@
         "shape": "doc",
         "tone": "cyan"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/8730987/pexels-photo-8730987.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Podpisywanie dokumentu"
+        },
+        {
+          "src": "https://images.pexels.com/photos/5387258/pexels-photo-5387258.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Podpisanie umowy"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -1384,6 +1584,16 @@
         "shape": "book",
         "tone": "ink"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/6583363/pexels-photo-6583363.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Wachlarz próbek kolorów w dłoni"
+        },
+        {
+          "src": "https://images.pexels.com/photos/9421350/pexels-photo-9421350.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Wzornik kolorów Pantone"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -1435,6 +1645,16 @@
         "shape": "calendar",
         "tone": "yellow"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/29996969/pexels-photo-29996969.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Kolorowy planer i kalendarz na biurku"
+        },
+        {
+          "src": "https://images.pexels.com/photos/15556833/pexels-photo-15556833.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Kalendarz na biurku"
+        }
+      ],
       "specs": [
         [
           "Format",
@@ -1484,6 +1704,16 @@
         "shape": "pin",
         "tone": "cyan"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/35969/pexels-photo-35969.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Mapa w aplikacji na smartfonie"
+        },
+        {
+          "src": "https://images.pexels.com/photos/5226497/pexels-photo-5226497.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Mapa na smartfonie"
+        }
+      ],
       "specs": [
         [
           "Realizacja",
@@ -1533,6 +1763,16 @@
         "shape": "pentool",
         "tone": "yellow"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/30693630/pexels-photo-30693630.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Projektowanie na tablecie graficznym"
+        },
+        {
+          "src": "https://images.pexels.com/photos/16284691/pexels-photo-16284691.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Pracownia grafika"
+        }
+      ],
       "specs": [
         [
           "Realizacja",
@@ -1590,6 +1830,16 @@
         "shape": "pentool",
         "tone": "magenta"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/6615229/pexels-photo-6615229.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Szkice w szkicowniku"
+        },
+        {
+          "src": "https://images.pexels.com/photos/16284691/pexels-photo-16284691.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Grafik przy pracy"
+        }
+      ],
       "specs": [
         [
           "Realizacja",
@@ -1639,6 +1889,16 @@
         "shape": "gift",
         "tone": "magenta"
       },
+      "images": [
+        {
+          "src": "https://images.pexels.com/photos/5872351/pexels-photo-5872351.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Czarne pudełko prezentowe z białą wstążką"
+        },
+        {
+          "src": "https://images.pexels.com/photos/8014845/pexels-photo-8014845.jpeg?auto=compress&cs=tinysrgb&w=1200",
+          "alt": "Prezent ze wstążką"
+        }
+      ],
       "specs": [
         [
           "Ważność",

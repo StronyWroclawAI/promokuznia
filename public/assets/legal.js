@@ -60,6 +60,7 @@ export const LEGAL = {
         <li><b>Stripe</b> i <b>Przelewy24</b> — obsługa płatności. Danych karty nie widzimy.</li>
         <li><b>InPost</b> — doręczenie przesyłki.</li>
         <li><b>Resend</b> — wysyłka e-maili o zamówieniu.</li>
+        <li><b>Pexels</b> — część zdjęć poglądowych ładuje się z serwerów Pexels, które widzą adres IP przeglądarki (jak każdy serwer obrazków).</li>
         <li>Biuro rachunkowe — księgowość.</li>
       </ul>
       <p>Część dostawców (Cloudflare, Stripe, Resend) może przetwarzać dane poza EOG — na podstawie standardowych klauzul umownych Komisji Europejskiej lub programu EU-US Data Privacy Framework.</p>`],

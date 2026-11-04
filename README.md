@@ -16,7 +16,8 @@ Stack: **Cloudflare Pages + Pages Functions + D1** (później KV, R2, Cron), fro
 | 5 | InPost ShipX + Geowidget (Paczkomat i kurier, etykiety, statusy) | gotowe; Furgonetka — opcjonalnie |
 | 6 | Panel admina, maile (Resend), faktury (Fakturownia) | panel i maile gotowe; faktury — dalej |
 | 7 | Regulamin, prywatność, odstąpienie, limity prób, Turnstile, nagłówki, testy | gotowe |
-| 8 | Domena, tryb demo, karta portfolio | — |
+| 8 | Zdjęcia produktów, dodawanie produktów w panelu, import/eksport Excela, nowy wygląd z animacjami | gotowe |
+| 9 | Domena, tryb demo, karta portfolio | — |
 
 ## Uruchomienie lokalne
 
@@ -99,6 +100,7 @@ migrations/0002_…sql          sesje, reset hasła, pliki klientów
 migrations/0005_przesylki.sql dane przesyłek InPost
 migrations/0004_maile.sql     link do zamówienia w mailach, dziennik maili
 migrations/0003_…sql          token dostępu do zamówienia, płatności z próbami i symulatorem
+migrations/0007_zdjecia.sql   zdjęcia produktów (adres URL albo R2) + zdjęcia startowe z Pexels
 seed/catalog.json             źródło asortymentu — edytuj tutaj
 scripts/build-seed.mjs        catalog.json → seed/seed.sql + public/data/catalog.json
 scripts/build-preview.mjs     cały sklep w jednym pliku HTML (dist/)
@@ -231,3 +233,48 @@ Formularz odstąpienia zapisuje oświadczenie przy zamówieniu (widać je w hist
 **Testy:** `npm test` — 19 testów: sumy, dostawa, rabaty, pobranie, VAT, walidacja kasy i NIP, Omnibus, podpis Stripe, hasła, uprawnienia panelu, przesyłki InPost.
 
 **Wybór Paczkomatu bez konta InPost:** kasa szuka punktów po mieście, kodzie pocztowym, lokalizacji („Blisko mnie”) albo kodzie punktu przez `/api/lockers` (publiczne API punktów ShipX). Mapa Geowidget pojawia się dodatkowo, gdy jest `INPOST_GEOWIDGET_TOKEN`.
+
+## Zdjęcia, produkty w panelu i Excel (Etap 8)
+
+**Zdjęcia.** Tabela `product_images` trzyma adres zdjęcia (`src`) — pełny URL (np. Pexels) albo
+`/api/images/products/…` dla plików wgranych w panelu do R2. Sklep pokazuje zdjęcie z płynnym
+wczytaniem; gdy adres nie działa, w tym samym miejscu pojawia się ilustracja SVG. Zdjęcia startowe
+pochodzą z [Pexels](https://www.pexels.com/license/) (darmowe użycie komercyjne, bez podpisu)
+i są poglądowe — przed prawdziwą sprzedażą podmień je na zdjęcia własnych produktów.
+
+**Wdrożenie Etapu 8:** przed wgraniem plików uruchom migrację — dodaje kolumnę i zdjęcia startowe:
+
+```bash
+npm run db:migrate:remote     # zastosuje 0007_zdjecia.sql
+```
+
+Albo w panelu Cloudflare: D1 → promokuznia-db → Console → wklej treść `migrations/0007_zdjecia.sql`.
+Wgrywanie zdjęć w panelu wymaga bindingu R2 `FILES` (jest w `wrangler.toml`).
+
+**Panel → Produkty**
+
+- *Dodaj produkt / Edytuj* — formularz: dane, warianty (nazwa, SKU, cena, stan), VAT, promocja,
+  zdjęcia (wgranie do R2 albo adres URL, kolejność, opis alt), wysyłka, specyfikacja.
+- *Pobierz szablon .xlsx* — arkusz „Produkty” z listami rozwijanymi, „Przykład”, „Instrukcja”, „Słowniki”.
+- *Eksportuj katalog .xlsx* — cały katalog w tym samym układzie: zmieniasz w Excelu i wczytujesz z powrotem.
+- *Import z Excela* — wczytanie .xlsx lub .csv, podgląd z błędami dla każdego wiersza
+  (serwer sprawdza wszystko na sucho), dopiero potem zapis. Duże pliki idą w paczkach po 25 produktów.
+
+Zasady importu: jeden wiersz = jeden wariant; istniejący slug aktualizuje produkt, istniejący SKU —
+wariant; warianty, których nie ma w pliku, są wyłączane (nie kasowane, bo mogą być w zamówieniach);
+zmiana ceny trafia do `price_history` (Omnibus). Pliki Excela są czytane i tworzone w przeglądarce
+bez zewnętrznych bibliotek (`public/admin/xlsx.js`).
+
+| Endpoint | Co robi |
+|---|---|
+| `POST /api/admin/products` | zapis produktu z formularza (`id` = edycja) |
+| `GET /api/admin/products/:id` | dane do formularza |
+| `GET /api/admin/products/export` | cały katalog do Excela |
+| `POST /api/admin/products/import` | `{ products, dry_run }` — sprawdzenie albo zapis do 25 produktów |
+| `POST /api/admin/images` | zdjęcie do R2 (JPG, PNG, WebP, AVIF, do 8 MB) |
+| `GET /api/images/products/…` | publiczne zdjęcia produktów z R2 |
+
+**Wygląd i ruch.** Płynne przejścia między stronami (View Transitions API, zdjęcie karty „przelatuje”
+na stronę produktu), elementy pojawiające się przy przewijaniu, szuflada koszyka z animacją dodania
+produktu, galeria z lupą, pasek „Do koszyka” na telefonie, przewijany pasek haseł. Przy włączonym
+w systemie ograniczeniu ruchu animacje są wyłączone, a treść widoczna od razu.

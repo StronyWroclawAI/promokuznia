@@ -1,4 +1,4 @@
-// Panel admina PromoKuźni. Widoki: #pulpit, #zamowienia, #z-<id>, #produkty.
+// Panel admina PromoKuźni. Widoki: #pulpit, #zamowienia, #z-<id>, #produkty, #produkt-<id|nowy>, #import.
 // Logowanie to zwykłe konto sklepu; dostęp mają e-maile z sekretu ADMIN_EMAILS.
 
 const main = document.getElementById('adm');
@@ -17,6 +17,8 @@ const PAY_STATUS = { utworzona: 'oczekuje', oplacona: 'opłacona', odrzucona: 'o
 const SOURCE = { klient: 'klient', webhook_platnosci: 'płatność', webhook_przewoznika: 'przewoźnik', admin: 'sklep', cron: 'automat' };
 const PROJECT = { czeka: 'czeka na akceptację', zaakceptowany: 'zaakceptowany', do_poprawy: 'do poprawy' };
 
+import { initProducts, viewProducts, viewProductEdit, viewImport } from './products.js';
+
 let labels = {};
 let toastTimer;
 function toast(text) {
@@ -33,7 +35,7 @@ async function api(method, url, body) {
     body: body ? JSON.stringify(body) : undefined
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) { const e = new Error(data.error || `Błąd ${res.status}`); e.status = res.status; throw e; }
+  if (!res.ok) { const e = new Error(data.error || `Błąd ${res.status}`); e.status = res.status; e.data = data; throw e; }
   return data;
 }
 
@@ -283,54 +285,6 @@ async function viewOrder(id) {
   }));
 }
 
-// ───────────── Produkty ─────────────
-
-async function viewProducts() {
-  const { products } = await api('GET', '/api/admin/products');
-  main.innerHTML = `
-    <div class="adm-title"><h1 class="h2">Produkty</h1><span class="small">Zmiana ceny zapisuje się w historii cen — sklep sam policzy najniższą cenę z 30 dni.</span></div>
-    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Wariant</th><th>SKU</th><th class="num">Cena (zł)</th><th class="num">Stan</th><th class="num">Rezerw.</th><th class="num">Sprzedano</th><th>W sklepie</th><th></th></tr></thead><tbody>
-    ${products.map((p) => `<tr class="group ${p.active ? '' : 'off'}"><td colspan="6"><span class="prod-name">${esc(p.name)}</span> <span class="small">· ${esc(p.category)}</span></td>
-        <td colspan="2"><label class="check"><input type="checkbox" data-product="${p.id}" ${p.active ? 'checked' : ''}><span>widoczny</span></label></td></tr>
-      ${p.variants.map((v) => `<tr data-variant="${v.id}" class="${v.active && p.active ? '' : 'off'}">
-        <td>${esc(v.label)}</td><td class="mono small">${esc(v.sku)}</td>
-        <td class="num"><input class="mini" type="number" step="0.01" min="1" data-field="price" value="${(v.price_gr / 100).toFixed(2)}" aria-label="Cena ${esc(p.name)} ${esc(v.label)}"></td>
-        <td class="num">${v.stock === null ? '<span class="small">bez limitu</span>' : `<input class="mini" type="number" step="1" min="${v.reserved}" data-field="stock" value="${v.stock}" aria-label="Stan ${esc(p.name)} ${esc(v.label)}">`}</td>
-        <td class="num">${v.reserved || '—'}</td><td class="num">${v.sold || '—'}</td>
-        <td><label class="check"><input type="checkbox" data-field="active" ${v.active ? 'checked' : ''}><span>aktywny</span></label></td>
-        <td><button class="btn" type="button" data-save hidden>Zapisz</button></td></tr>`).join('')}`).join('')}
-    </tbody></table></div>`;
-
-  main.querySelectorAll('tr[data-variant]').forEach((row) => {
-    const save = row.querySelector('[data-save]');
-    row.querySelectorAll('input.mini').forEach((i) => i.addEventListener('input', () => { i.dataset.dirty = '1'; save.hidden = false; }));
-    row.querySelector('[data-field="active"]').addEventListener('change', (e) => {
-      api('PATCH', `/api/admin/variants/${row.dataset.variant}`, { active: e.target.checked })
-        .then((r) => { toast(r.message); row.classList.toggle('off', !e.target.checked); })
-        .catch((err) => { toast(err.message); e.target.checked = !e.target.checked; });
-    });
-    save.addEventListener('click', () => {
-      const body = {};
-      const price = row.querySelector('[data-field="price"]');
-      const stock = row.querySelector('[data-field="stock"]');
-      if (price.dataset.dirty) body.price_gr = Math.round(Number(price.value.replace(',', '.')) * 100);
-      if (stock?.dataset.dirty) body.stock = Number(stock.value);
-      save.disabled = true;
-      api('PATCH', `/api/admin/variants/${row.dataset.variant}`, body).then((r) => {
-        toast(r.message);
-        row.querySelectorAll('[data-dirty]').forEach((i) => delete i.dataset.dirty);
-        save.hidden = true;
-      }).catch((err) => toast(err.message)).finally(() => { save.disabled = false; });
-    });
-  });
-  main.querySelectorAll('[data-product]').forEach((c) => c.addEventListener('change', () => {
-    api('PATCH', `/api/admin/products/${c.dataset.product}`, { active: c.checked })
-      .then((r) => { toast(r.message); viewProducts(); })
-      .catch((err) => { toast(err.message); c.checked = !c.checked; });
-  }));
-  main.querySelectorAll('tr[data-href]').forEach((r) => r.addEventListener('click', () => { location.hash = r.dataset.href; }));
-}
-
 // ───────────── Router i dostęp ─────────────
 
 function gate(title, text, link) {
@@ -341,7 +295,8 @@ function gate(title, text, link) {
 async function render() {
   const route = location.hash.slice(1) || 'pulpit';
   nav.querySelectorAll('a').forEach((a) => {
-    const on = route === a.dataset.sec || (a.dataset.sec === 'zamowienia' && route.startsWith('z-'));
+    const on = route === a.dataset.sec || (a.dataset.sec === 'zamowienia' && route.startsWith('z-'))
+      || (a.dataset.sec === 'produkty' && (route.startsWith('produkt-') || route === 'import'));
     if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
   try {
@@ -349,6 +304,9 @@ async function render() {
     else if (route === 'zamowienia') await viewOrders();
     else if (route.startsWith('z-')) await viewOrder(Number(route.slice(2)));
     else if (route === 'produkty') await viewProducts();
+    else if (route === 'produkt-nowy') await viewProductEdit(null);
+    else if (route.startsWith('produkt-')) await viewProductEdit(Number(route.slice(8)));
+    else if (route === 'import') await viewImport();
     else location.hash = 'pulpit';
   } catch (err) {
     if (err.status === 401 || err.status === 403) return start();
@@ -375,6 +333,7 @@ async function start() {
   render();
 }
 
+initProducts({ main, api, toast, esc, zl });
 window.addEventListener('hashchange', () => { render(); window.scrollTo({ top: 0 }); });
 toastEl.addEventListener('click', () => { toastEl.hidden = true; });
 start();
