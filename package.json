@@ -1,0 +1,21 @@
+{
+  "name": "promokuznia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PromoKuźnia — sklep z materiałami marketingowymi (projekt portfolio, Cloudflare Pages + Functions + D1)",
+  "type": "module",
+  "scripts": {
+    "seed:build": "node scripts/build-seed.mjs",
+    "db:migrate": "wrangler d1 migrations apply promokuznia-db --local",
+    "db:seed": "node scripts/build-seed.mjs && wrangler d1 execute promokuznia-db --local --file=seed/seed.sql",
+    "db:reset": "rm -rf .wrangler/state/v3/d1 && npm run db:migrate && npm run db:seed",
+    "dev": "wrangler pages dev",
+    "preview:build": "node scripts/build-preview.mjs",
+    "db:migrate:remote": "wrangler d1 migrations apply promokuznia-db --remote",
+    "db:seed:remote": "node scripts/build-seed.mjs && wrangler d1 execute promokuznia-db --remote --file=seed/seed.sql",
+    "deploy": "wrangler pages deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

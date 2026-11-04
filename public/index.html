@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PromoKuźnia</title>
+<meta name="description" content="PromoKuźnia — druk firmowy, gadżety z logo, roll-upy, szablony i usługi marketingowe dla małych firm.">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@75..150,500..900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<!--APP-->
+<div class="demo-bar" role="note">
+  <div class="wrap">Sklep demonstracyjny — zamówienia nie są realizowane, a płatności działają w trybie testowym.</div>
+</div>
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="#start" aria-label="PromoKuźnia — strona główna">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">Promo<b>Kuźnia</b></span>
+    </a>
+    <form class="search" id="search-form" role="search">
+      <label class="sr-only" for="search-input">Szukaj produktów</label>
+      <input id="search-input" type="search" placeholder="Szukaj: wizytówki, kubek, roll-up…" autocomplete="off">
+    </form>
+    <a class="account-link" href="#konto" id="account-link">Zaloguj się</a>
+    <a class="cart-link" href="#koszyk" id="cart-link">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M3 4h2.2l2.1 10.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="19.5" r="1.4" fill="currentColor"/><circle cx="17" cy="19.5" r="1.4" fill="currentColor"/></svg>
+      <span class="cart-label">Koszyk</span>
+      <span class="cart-count" id="cart-count" aria-live="polite">0</span>
+    </a>
+  </div>
+  <nav class="wrap cat-nav" id="cat-nav" aria-label="Kategorie"></nav>
+  <div class="cmyk-bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+</header>
+
+<main id="view" class="wrap" tabindex="-1"></main>
+
+<footer class="site-footer">
+  <div class="wrap footer-grid">
+    <div>
+      <p class="brand-name">Promo<b>Kuźnia</b></p>
+      <p class="muted">Materiały marketingowe dla małych firm. Projekt portfolio Strony AI Wrocław.</p>
+    </div>
+    <div>
+      <p class="eyebrow">Zakupy</p>
+      <ul class="plain">
+        <li>Dostawa: Paczkomat InPost, kurier, odbiór osobisty</li>
+        <li>Płatności: BLIK, karta, Przelewy24 (tryb testowy)</li>
+        <li>Darmowa dostawa od 300 zł</li>
+      </ul>
+    </div>
+    <div>
+      <p class="eyebrow">Informacje</p>
+      <ul class="plain">
+        <li>Regulamin i polityka prywatności — Etap 7</li>
+        <li>Odstąpienie od umowy: 14 dni, z wyjątkiem produktów personalizowanych</li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<!--/APP-->
+<script src="/assets/app.js" type="module"></script>
+</body>
+</html>

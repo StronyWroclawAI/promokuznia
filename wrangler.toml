@@ -1,0 +1,26 @@
+name = "promokuznia"
+pages_build_output_dir = "./public"
+compatibility_date = "2026-09-01"
+
+# Baza zamówień i katalogu.
+# 1) npx wrangler d1 create promokuznia-db
+# 2) wklej zwrócone database_id poniżej (lokalnie działa też z tym zastępczym)
+[[d1_databases]]
+binding = "DB"
+database_name = "promokuznia-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# Etap 3+: cache katalogu i sesje
+# [[kv_namespaces]]
+# binding = "CACHE"
+# id = "..."
+
+# Pliki klientów (logo, projekty), później zdjęcia produktów i produkty cyfrowe.
+# npx wrangler r2 bucket create promokuznia-files
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "promokuznia-files"
+
+[vars]
+SHOP_MODE = "demo"   # demo = pasek „Sklep demonstracyjny”, płatności tylko testowe

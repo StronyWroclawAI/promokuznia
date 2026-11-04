@@ -1,0 +1,557 @@
+{
+  "categories": [
+    { "slug": "druk-firmowy", "name": "Druk firmowy", "lead": "Wizytówki, ulotki, papier i teczki — z plików klienta albo z naszego projektu.", "sort": 1 },
+    { "slug": "gadzety-z-logo", "name": "Gadżety z logo", "lead": "Kubki, długopisy, torby i odzież z nadrukiem lub grawerem.", "sort": 2 },
+    { "slug": "systemy-wystawiennicze", "name": "Systemy wystawiennicze", "lead": "Roll-upy, ścianki i flagi na targi, eventy i witryny.", "sort": 3 },
+    { "slug": "produkty-cyfrowe", "name": "Produkty cyfrowe", "lead": "Szablony do pobrania od ręki — bez wysyłki, link w mailu.", "sort": 4 },
+    { "slug": "uslugi", "name": "Usługi", "lead": "Projekt i audyt wykonany przez grafika i marketera.", "sort": 5 },
+    { "slug": "karty-podarunkowe", "name": "Karty podarunkowe", "lead": "Bon na dowolne produkty PromoKuźni, ważny 12 miesięcy.", "sort": 6 }
+  ],
+  "products": [
+    {
+      "slug": "wizytowki-standard",
+      "name": "Wizytówki Standard",
+      "category": "druk-firmowy",
+      "type": "physical",
+      "short": "Kreda matowa 350 g/m², druk dwustronny 4+4, format 85×55 mm.",
+      "description": "Najczęściej zamawiane wizytówki: sztywny papier kredowy 350 g/m², żywe kolory CMYK po obu stronach i równe cięcie na gilotynie. Wgrywasz własny PDF albo projektujesz wizytówkę w naszym kreatorze.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 3,
+      "weight_g": 400,
+      "dims_cm": [10, 7, 5],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "card", "tone": "magenta" },
+      "specs": [["Format", "85 × 55 mm (+2 mm spadu)"], ["Papier", "kreda matowa 350 g/m²"], ["Kolorystyka", "4+4 CMYK"], ["Plik", "PDF/X-1a, 300 dpi"]],
+      "badges": ["Bestseller"],
+      "variants": [
+        { "code": "100", "label": "100 szt.", "price_gr": 4900, "stock": 999 },
+        { "code": "250", "label": "250 szt.", "price_gr": 7900, "stock": 999 },
+        { "code": "500", "label": "500 szt.", "price_gr": 11900, "stock": 999 },
+        { "code": "1000", "label": "1000 szt.", "price_gr": 17900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "wizytowki-soft-touch",
+      "name": "Wizytówki Premium Soft Touch",
+      "category": "druk-firmowy",
+      "type": "physical",
+      "short": "Aksamitna folia soft-touch i lakier UV wybiórczy na logo.",
+      "description": "Wizytówka, którą klient zapamięta w dłoni: folia soft-touch o aksamitnym chwycie i błyszczący lakier UV punktowo na logo. Papier 400 g/m² nie wygina się w portfelu.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 5,
+      "weight_g": 450,
+      "dims_cm": [10, 7, 5],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "card", "tone": "ink" },
+      "specs": [["Format", "85 × 55 mm"], ["Papier", "kreda 400 g/m²"], ["Uszlachetnienie", "folia soft-touch 2-str., lakier UV 1+0"], ["Plik", "PDF + osobna warstwa lakieru"]],
+      "badges": [],
+      "variants": [
+        { "code": "250", "label": "250 szt.", "price_gr": 13900, "stock": 999 },
+        { "code": "500", "label": "500 szt.", "price_gr": 19900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "ulotki-a5",
+      "name": "Ulotki A5",
+      "category": "druk-firmowy",
+      "type": "physical",
+      "short": "Kreda błysk 130 g/m², 4+4, idealne do skrzynek i na ladę.",
+      "description": "Klasyczna ulotka A5 na kredzie błyszczącej 130 g/m². Sprawdza się w kolportażu, na ladzie i jako wkładka do paczek.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 3,
+      "weight_g": 4200,
+      "dims_cm": [23, 16, 18],
+      "shipping": "paczkomat",
+      "parcel_size": "B",
+      "art": { "shape": "flyer", "tone": "cyan" },
+      "specs": [["Format", "148 × 210 mm"], ["Papier", "kreda błysk 130 g/m²"], ["Kolorystyka", "4+4 CMYK"]],
+      "badges": [],
+      "variants": [
+        { "code": "500", "label": "500 szt.", "price_gr": 12900, "stock": 999 },
+        { "code": "1000", "label": "1000 szt.", "price_gr": 16900, "stock": 999 },
+        { "code": "2500", "label": "2500 szt.", "price_gr": 29900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "ulotki-dl-skladane",
+      "name": "Ulotki DL składane",
+      "category": "druk-firmowy",
+      "type": "physical",
+      "short": "Format A4 bigowany i składany do DL — 6 stron na ofertę lub menu.",
+      "description": "Arkusz A4 złożony dwukrotnie do formatu DL (99 × 210 mm). Sześć stron miejsca na cennik, menu albo opis usług, bez kosztów broszury.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 4,
+      "weight_g": 6100,
+      "dims_cm": [23, 12, 25],
+      "shipping": "paczkomat",
+      "parcel_size": "B",
+      "art": { "shape": "flyer", "tone": "yellow" },
+      "specs": [["Format po złożeniu", "99 × 210 mm"], ["Bigowanie", "2 bigi, falc zwijany"], ["Papier", "kreda mat 170 g/m²"]],
+      "badges": [],
+      "variants": [
+        { "code": "1000", "label": "1000 szt.", "price_gr": 24900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "papier-firmowy-a4",
+      "name": "Papier firmowy A4",
+      "category": "druk-firmowy",
+      "type": "physical",
+      "short": "Offset 120 g/m², bezpieczny do drukarek laserowych.",
+      "description": "Papier z nadrukowaną stopką i logo, na którym wydrukujesz pisma i oferty w biurze. Offset 120 g/m² nie zwija się w drukarce laserowej.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 4,
+      "weight_g": 3900,
+      "dims_cm": [31, 22, 6],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "letter", "tone": "cyan" },
+      "specs": [["Format", "210 × 297 mm"], ["Papier", "offset 120 g/m²"], ["Kolorystyka", "4+0 CMYK"]],
+      "badges": [],
+      "variants": [
+        { "code": "250", "label": "250 ark.", "price_gr": 15900, "stock": 999 },
+        { "code": "500", "label": "500 ark.", "price_gr": 22900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "teczki-ofertowe-a4",
+      "name": "Teczki ofertowe A4",
+      "category": "druk-firmowy",
+      "type": "physical",
+      "short": "Karton 350 g/m², grzbiet 5 mm, nacięcie na wizytówkę.",
+      "description": "Teczka na ofertę lub umowę, która mieści do 50 kartek. Nacięcie na wizytówkę w skrzydełku i folia matowa zabezpieczająca przed zarysowaniem.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 6,
+      "weight_g": 9800,
+      "dims_cm": [34, 25, 20],
+      "shipping": "kurier",
+      "parcel_size": "C",
+      "art": { "shape": "folder", "tone": "magenta" },
+      "specs": [["Format", "220 × 310 mm po złożeniu"], ["Karton", "kreda 350 g/m² + folia mat 1+0"], ["Grzbiet", "5 mm"]],
+      "badges": [],
+      "variants": [
+        { "code": "100", "label": "100 szt.", "price_gr": 54900, "stock": 999 },
+        { "code": "250", "label": "250 szt.", "price_gr": 89900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "naklejki-z-logo",
+      "name": "Naklejki z logo",
+      "category": "druk-firmowy",
+      "type": "physical",
+      "short": "Folia winylowa wycinana po obrysie, 5 × 5 cm.",
+      "description": "Naklejki na opakowania, laptopy i witryny. Folia winylowa odporna na wodę, cięta ploterem dokładnie po kształcie logo.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 4,
+      "weight_g": 200,
+      "dims_cm": [20, 15, 1],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "sticker", "tone": "yellow" },
+      "specs": [["Rozmiar", "do 50 × 50 mm"], ["Materiał", "folia winylowa biała, laminat"], ["Cięcie", "po obrysie"]],
+      "badges": [],
+      "variants": [
+        { "code": "100", "label": "100 szt.", "price_gr": 6900, "stock": 999 },
+        { "code": "500", "label": "500 szt.", "price_gr": 18900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "kubek-ceramiczny-z-logo",
+      "name": "Kubek ceramiczny z logo",
+      "category": "gadzety-z-logo",
+      "type": "physical",
+      "short": "330 ml, nadruk sublimacyjny dookoła, można myć w zmywarce.",
+      "description": "Kubek, który zostaje na biurku klienta na lata. Nadruk sublimacyjny na całym obwodzie nie ściera się w zmywarce. Zamawiasz od 1 sztuki — dobre na prezent i na próbę przed większym nakładem.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 3,
+      "weight_g": 450,
+      "dims_cm": [15, 15, 12],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "mug", "tone": "magenta" },
+      "specs": [["Pojemność", "330 ml"], ["Nadruk", "sublimacja 360°"], ["Zmywarka", "tak, do 500 cykli"]],
+      "badges": ["Od 1 szt."],
+      "variants": [
+        { "code": "BIA", "label": "biały", "price_gr": 3900, "stock": 140 },
+        { "code": "CZA", "label": "czarny z białym polem", "price_gr": 4400, "stock": 64 },
+        { "code": "MAG", "label": "biały, wnętrze magenta", "price_gr": 4400, "stock": 38 }
+      ]
+    },
+    {
+      "slug": "kubek-termiczny-450",
+      "name": "Kubek termiczny 450 ml",
+      "category": "gadzety-z-logo",
+      "type": "physical",
+      "short": "Stal nierdzewna, podwójna ścianka, grawer laserowy.",
+      "description": "Kubek do auta i na spacer. Utrzymuje temperaturę napoju do 6 godzin, logo wygrawerowane laserem nie zetrze się nigdy.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 4,
+      "weight_g": 380,
+      "dims_cm": [22, 10, 10],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "thermo", "tone": "ink" },
+      "specs": [["Pojemność", "450 ml"], ["Materiał", "stal 304, podwójna ścianka"], ["Znakowanie", "grawer laserowy"]],
+      "badges": [],
+      "variants": [
+        { "code": "GRA", "label": "grafitowy", "price_gr": 7900, "stock": 6 },
+        { "code": "SRE", "label": "srebrny", "price_gr": 7900, "stock": 22 }
+      ]
+    },
+    {
+      "slug": "dlugopis-metalowy-grawer",
+      "name": "Długopis metalowy z grawerem",
+      "category": "gadzety-z-logo",
+      "type": "physical",
+      "short": "Aluminiowy korpus, niebieski wkład, grawer logo w cenie.",
+      "description": "Długopis, którego nikt nie wyrzuca: chłodny metal, płynny wkład i logo wygrawerowane laserem. Pakowany pojedynczo w woreczki.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 5,
+      "weight_g": 1200,
+      "dims_cm": [20, 15, 8],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "pen", "tone": "cyan" },
+      "specs": [["Korpus", "aluminium anodowane"], ["Wkład", "niebieski, typu Parker"], ["Znakowanie", "grawer laserowy 1 strona"]],
+      "badges": [],
+      "variants": [
+        { "code": "10", "label": "10 szt.", "price_gr": 9900, "stock": 500 },
+        { "code": "50", "label": "50 szt.", "price_gr": 34900, "stock": 500 },
+        { "code": "100", "label": "100 szt.", "price_gr": 59900, "stock": 500 }
+      ]
+    },
+    {
+      "slug": "smycze-z-nadrukiem",
+      "name": "Smycze z nadrukiem",
+      "category": "gadzety-z-logo",
+      "type": "physical",
+      "short": "Taśma 20 mm, nadruk sublimacyjny, karabińczyk i zapięcie bezpieczne.",
+      "description": "Smycze na konferencje i dla zespołu. Nadruk sublimacyjny w pełnym kolorze na całej długości taśmy, zapięcie bezpieczne rozpina się przy szarpnięciu.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 7,
+      "weight_g": 1500,
+      "dims_cm": [25, 20, 8],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "lanyard", "tone": "magenta" },
+      "specs": [["Szerokość", "20 mm"], ["Długość", "90 cm w obwodzie"], ["Nadruk", "sublimacja 2-str."]],
+      "badges": [],
+      "variants": [
+        { "code": "50", "label": "50 szt.", "price_gr": 29900, "stock": 999 },
+        { "code": "100", "label": "100 szt.", "price_gr": 44900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "torba-bawelniana-z-nadrukiem",
+      "name": "Torba bawełniana z nadrukiem",
+      "category": "gadzety-z-logo",
+      "type": "physical",
+      "short": "Bawełna 140 g/m², długie uchwyty, sitodruk 1 kolor.",
+      "description": "Torba na zakupy, targi i jako opakowanie zamówień. Mocna bawełna 140 g/m² i nadruk sitodrukiem, który przetrwa pranie.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 7,
+      "weight_g": 3200,
+      "dims_cm": [40, 30, 10],
+      "shipping": "paczkomat",
+      "parcel_size": "B",
+      "art": { "shape": "tote", "tone": "yellow" },
+      "specs": [["Wymiar", "38 × 42 cm"], ["Materiał", "bawełna 140 g/m², kolor ecru"], ["Nadruk", "sitodruk 1 kolor, 1 strona"]],
+      "badges": [],
+      "variants": [
+        { "code": "25", "label": "25 szt.", "price_gr": 34900, "stock": 400 },
+        { "code": "50", "label": "50 szt.", "price_gr": 59900, "stock": 400 }
+      ]
+    },
+    {
+      "slug": "koszulka-z-logo",
+      "name": "Koszulka z logo",
+      "category": "gadzety-z-logo",
+      "type": "physical",
+      "short": "Bawełna 180 g/m², nadruk DTF na piersi lub plecach.",
+      "description": "Koszulka dla zespołu, na event albo do sklepu. Zamawiasz dowolną liczbę sztuk w różnych rozmiarach — każdy rozmiar to osobna pozycja w koszyku.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 5,
+      "weight_g": 220,
+      "dims_cm": [30, 25, 3],
+      "shipping": "paczkomat",
+      "parcel_size": "A",
+      "art": { "shape": "tshirt", "tone": "ink" },
+      "specs": [["Materiał", "100% bawełna czesana 180 g/m²"], ["Nadruk", "DTF do A4"], ["Kolor", "czarny"]],
+      "badges": [],
+      "variants": [
+        { "code": "S", "label": "S", "price_gr": 6900, "stock": 18 },
+        { "code": "M", "label": "M", "price_gr": 6900, "stock": 31 },
+        { "code": "L", "label": "L", "price_gr": 6900, "stock": 27 },
+        { "code": "XL", "label": "XL", "price_gr": 6900, "stock": 9 },
+        { "code": "XXL", "label": "XXL", "price_gr": 7400, "stock": 0 }
+      ]
+    },
+    {
+      "slug": "notes-a5-z-logo",
+      "name": "Notes A5 z logo",
+      "category": "gadzety-z-logo",
+      "type": "physical",
+      "short": "50 kartek w kratkę, okładka 300 g/m², klejony grzbiet.",
+      "description": "Notes na spotkania z klientami. Każda kartka z delikatnym logo w stopce, okładka z Twoim projektem.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 6,
+      "weight_g": 4800,
+      "dims_cm": [32, 23, 12],
+      "shipping": "paczkomat",
+      "parcel_size": "B",
+      "art": { "shape": "notebook", "tone": "cyan" },
+      "specs": [["Format", "A5"], ["Środek", "50 kartek, offset 80 g/m², kratka"], ["Oprawa", "klejona, okładka 300 g/m²"]],
+      "badges": [],
+      "variants": [
+        { "code": "25", "label": "25 szt.", "price_gr": 39900, "stock": 999 },
+        { "code": "50", "label": "50 szt.", "price_gr": 69900, "stock": 999 }
+      ]
+    },
+    {
+      "slug": "roll-up-85x200",
+      "name": "Roll-up 85 × 200 cm",
+      "category": "systemy-wystawiennicze",
+      "type": "physical",
+      "short": "Kaseta aluminiowa, wydruk na blockoucie, torba w zestawie.",
+      "description": "Podstawowy roll-up na targi i do recepcji. Rozkładasz go w 30 sekund, wydruk na nieprzezroczystym blockoucie nie prześwituje pod światło.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 4,
+      "weight_g": 3600,
+      "dims_cm": [92, 14, 12],
+      "shipping": "kurier",
+      "parcel_size": null,
+      "art": { "shape": "rollup", "tone": "magenta" },
+      "specs": [["Wymiar grafiki", "850 × 2000 mm"], ["Materiał", "blockout 440 g/m²"], ["W zestawie", "kaseta, maszt, torba"]],
+      "badges": ["Bestseller"],
+      "variants": [
+        { "code": "STD", "label": "standard", "price_gr": 24900, "stock": 45 }
+      ]
+    },
+    {
+      "slug": "roll-up-premium-100x200",
+      "name": "Roll-up Premium 100 × 200 cm",
+      "category": "systemy-wystawiennicze",
+      "type": "physical",
+      "short": "Szeroka kaseta z regulowanymi stopkami i wymiennym wkładem.",
+      "description": "Roll-up do częstego używania: stabilna szeroka kaseta, regulowane stopki na nierówną podłogę i możliwość wymiany grafiki bez kupowania nowej konstrukcji.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 5,
+      "weight_g": 5200,
+      "dims_cm": [108, 16, 14],
+      "shipping": "kurier",
+      "parcel_size": null,
+      "art": { "shape": "rollup", "tone": "cyan" },
+      "specs": [["Wymiar grafiki", "1000 × 2000 mm"], ["Kaseta", "aluminium, regulowane stopki"], ["Wymiana grafiki", "tak, kaseta z listwą zatrzaskową"]],
+      "badges": [],
+      "variants": [
+        { "code": "PRE", "label": "premium", "price_gr": 38900, "stock": 17 }
+      ]
+    },
+    {
+      "slug": "scianka-tekstylna-3x225",
+      "name": "Ścianka tekstylna 3 × 2,25 m",
+      "category": "systemy-wystawiennicze",
+      "type": "physical",
+      "short": "Stelaż łamany i grafika na tkaninie z silikonowym rantem.",
+      "description": "Tło do zdjęć, konferencji prasowej albo stoiska. Grafika na tkaninie nie odbija światła lamp, a stelaż składa się do torby na kółkach.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 7,
+      "weight_g": 14500,
+      "dims_cm": [115, 35, 30],
+      "shipping": "kurier",
+      "parcel_size": null,
+      "art": { "shape": "wall", "tone": "ink" },
+      "specs": [["Wymiar", "3000 × 2250 mm"], ["Grafika", "tkanina 230 g/m², rant silikonowy"], ["Transport", "torba na kółkach"]],
+      "badges": [],
+      "variants": [
+        { "code": "STD", "label": "jednostronna", "price_gr": 189000, "stock": 5 }
+      ]
+    },
+    {
+      "slug": "flaga-reklamowa-beach-flag",
+      "name": "Flaga reklamowa beach flag",
+      "category": "systemy-wystawiennicze",
+      "type": "physical",
+      "short": "Maszt z włókna szklanego i podstawa krzyżakowa, flaga w kształcie skrzydła.",
+      "description": "Widoczna z daleka flaga przed sklepem lub na festynie. Elastyczny maszt pracuje na wietrze zamiast się łamać.",
+      "vat": 23,
+      "personalizable": true,
+      "lead_time_days": 6,
+      "weight_g": 4300,
+      "dims_cm": [130, 15, 15],
+      "shipping": "kurier",
+      "parcel_size": null,
+      "art": { "shape": "flag", "tone": "yellow" },
+      "specs": [["Kształt", "skrzydło"], ["Materiał", "poliester 115 g/m²"], ["Podstawa", "krzyżak + obciążnik na wodę"]],
+      "badges": [],
+      "variants": [
+        { "code": "M", "label": "M — 2,8 m", "price_gr": 27900, "stock": 12 },
+        { "code": "L", "label": "L — 3,6 m", "price_gr": 34900, "stock": 0 }
+      ]
+    },
+    {
+      "slug": "pakiet-30-postow-instagram",
+      "name": "Pakiet 30 postów na Instagram",
+      "category": "produkty-cyfrowe",
+      "type": "digital",
+      "short": "Edytowalne szablony Canva i PSD, 1080 × 1350 px.",
+      "description": "Miesiąc publikacji gotowy w jeden wieczór. Trzydzieści układów postów i dziesięć okładek relacji, w których podmieniasz kolory, zdjęcia i teksty. Link do pobrania przychodzi mailem zaraz po płatności.",
+      "vat": 23,
+      "personalizable": false,
+      "lead_time_days": 0,
+      "art": { "shape": "grid", "tone": "magenta" },
+      "specs": [["Format", "Canva + PSD"], ["Rozmiar", "1080 × 1350 px"], ["Licencja", "1 firma, użytek komercyjny"], ["Dostawa", "link ważny 7 dni, 5 pobrań"]],
+      "badges": ["Promocja"],
+      "compare_at_gr": 9900,
+      "price_history": [
+        { "price_gr": 8900, "days_ago": 40 },
+        { "price_gr": 9900, "days_ago": 25 },
+        { "price_gr": 7900, "days_ago": 5 }
+      ],
+      "variants": [
+        { "code": "STD", "label": "licencja firmowa", "price_gr": 7900, "stock": null }
+      ]
+    },
+    {
+      "slug": "szablon-oferty-handlowej",
+      "name": "Szablon oferty handlowej",
+      "category": "produkty-cyfrowe",
+      "type": "digital",
+      "short": "12-stronicowa oferta w Canva, Google Docs i Word.",
+      "description": "Szkielet oferty, który prowadzi klienta od problemu do ceny: okładka, o nas, zakres, harmonogram, cennik w trzech pakietach i strona z referencjami.",
+      "vat": 23,
+      "personalizable": false,
+      "lead_time_days": 0,
+      "art": { "shape": "doc", "tone": "cyan" },
+      "specs": [["Format", "Canva, Google Docs, DOCX"], ["Stron", "12"], ["Dostawa", "link ważny 7 dni, 5 pobrań"]],
+      "badges": [],
+      "variants": [
+        { "code": "STD", "label": "licencja firmowa", "price_gr": 4900, "stock": null }
+      ]
+    },
+    {
+      "slug": "brandbook-kit",
+      "name": "Brandbook Kit",
+      "category": "produkty-cyfrowe",
+      "type": "digital",
+      "short": "Szablon księgi znaku: logo, kolory, typografia, przykłady użycia.",
+      "description": "Uporządkuj markę w 20 stronach. Szablon prowadzi przez wersje logo, pola ochronne, paletę z wartościami CMYK, RGB i HEX oraz przykłady na wizytówce, ulotce i w social mediach.",
+      "vat": 23,
+      "personalizable": false,
+      "lead_time_days": 0,
+      "art": { "shape": "book", "tone": "ink" },
+      "specs": [["Format", "Figma + PDF"], ["Stron", "20"], ["Dostawa", "link ważny 7 dni, 5 pobrań"]],
+      "badges": ["Nowość"],
+      "variants": [
+        { "code": "STD", "label": "licencja firmowa", "price_gr": 14900, "stock": null }
+      ]
+    },
+    {
+      "slug": "kalendarz-tresci-2027",
+      "name": "Kalendarz treści 2027",
+      "category": "produkty-cyfrowe",
+      "type": "digital",
+      "short": "Planer publikacji w Notion i Excelu z polskimi świętami i okazjami.",
+      "description": "Gotowy plan na cały rok: święta, dni branżowe i okazje sprzedażowe w Polsce, kolumny na kanał, format i status. Wystarczy wpisać swoje tematy.",
+      "vat": 23,
+      "personalizable": false,
+      "lead_time_days": 0,
+      "art": { "shape": "calendar", "tone": "yellow" },
+      "specs": [["Format", "Notion + XLSX"], ["Zakres", "styczeń–grudzień 2027"], ["Dostawa", "link ważny 7 dni, 5 pobrań"]],
+      "badges": [],
+      "variants": [
+        { "code": "STD", "label": "licencja firmowa", "price_gr": 3900, "stock": null }
+      ]
+    },
+    {
+      "slug": "audyt-profilu-google",
+      "name": "Audyt profilu Google Firmy",
+      "category": "uslugi",
+      "type": "service",
+      "short": "Raport PDF z listą poprawek i 15-minutowe omówienie online.",
+      "description": "Sprawdzamy kategorie, opis, zdjęcia, opinie i pozycję w mapach na 10 Twoich fraz. Dostajesz raport z poprawkami uszeregowanymi od najważniejszej.",
+      "vat": 23,
+      "personalizable": false,
+      "lead_time_days": 5,
+      "art": { "shape": "pin", "tone": "cyan" },
+      "specs": [["Realizacja", "5 dni roboczych"], ["Efekt", "raport PDF + rozmowa 15 min"], ["Potrzebne", "dostęp do profilu jako menedżer"]],
+      "badges": [],
+      "variants": [
+        { "code": "STD", "label": "audyt", "price_gr": 29900, "stock": null }
+      ]
+    },
+    {
+      "slug": "projekt-ulotki",
+      "name": "Projekt ulotki",
+      "category": "uslugi",
+      "type": "service",
+      "short": "Projekt A5 lub DL z dwiema rundami poprawek, plik gotowy do druku.",
+      "description": "Grafik projektuje ulotkę na podstawie Twoich tekstów i logo. Dostajesz PDF do druku i PNG do internetu. Przy zamówieniu druku w PromoKuźni plik od razu trafia do produkcji.",
+      "vat": 23,
+      "personalizable": false,
+      "lead_time_days": 4,
+      "art": { "shape": "pentool", "tone": "yellow" },
+      "specs": [["Realizacja", "4 dni robocze"], ["Poprawki", "2 rundy"], ["Pliki", "PDF do druku + PNG"]],
+      "badges": [],
+      "variants": [
+        { "code": "A5", "label": "ulotka A5", "price_gr": 24900, "stock": null },
+        { "code": "DL", "label": "ulotka DL składana", "price_gr": 34900, "stock": null }
+      ]
+    },
+    {
+      "slug": "projekt-logo",
+      "name": "Projekt logo w 3 wariantach",
+      "category": "uslugi",
+      "type": "service",
+      "short": "Trzy kierunki do wyboru, dopracowanie wybranego i pliki w każdym formacie.",
+      "description": "Krótka ankieta o firmie, trzy różne propozycje logo i dopracowanie tej, którą wybierzesz. Na koniec dostajesz SVG, PDF, PNG oraz wersje kolorystyczne CMYK i RGB.",
+      "vat": 23,
+      "personalizable": false,
+      "lead_time_days": 10,
+      "art": { "shape": "pentool", "tone": "magenta" },
+      "specs": [["Realizacja", "10 dni roboczych"], ["Propozycje", "3 kierunki"], ["Pliki", "SVG, PDF, PNG, CMYK i RGB"]],
+      "badges": [],
+      "variants": [
+        { "code": "STD", "label": "pakiet podstawowy", "price_gr": 89900, "stock": null }
+      ]
+    },
+    {
+      "slug": "karta-podarunkowa",
+      "name": "Karta podarunkowa",
+      "category": "karty-podarunkowe",
+      "type": "gift_card",
+      "short": "Kod do wykorzystania w koszyku, ważny 12 miesięcy, wysyłany mailem.",
+      "description": "Prezent dla kogoś, kto prowadzi firmę. Kod przychodzi mailem jako elegancki PDF do wydruku. Można go wykorzystać w częściach, saldo widać w koszyku.",
+      "vat": null,
+      "personalizable": false,
+      "lead_time_days": 0,
+      "art": { "shape": "gift", "tone": "magenta" },
+      "specs": [["Ważność", "12 miesięcy od zakupu"], ["Wykorzystanie", "w częściach, na dowolne produkty"], ["Dostawa", "e-mail z PDF"]],
+      "badges": [],
+      "variants": [
+        { "code": "100", "label": "100 zł", "price_gr": 10000, "stock": null },
+        { "code": "200", "label": "200 zł", "price_gr": 20000, "stock": null },
+        { "code": "500", "label": "500 zł", "price_gr": 50000, "stock": null }
+      ]
+    }
+  ]
+}
