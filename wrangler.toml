@@ -21,3 +21,6 @@ bucket_name = "promokuznia-files"
 
 [vars]
 SHOP_MODE = "demo"   # demo = pasek „Sklep demonstracyjny”, płatności tylko testowe
+# Maile (Resend): nadawca z domeny zweryfikowanej w Resend; odpowiedzi klientów trafiają na MAIL_REPLY_TO
+MAIL_FROM = "PromoKuźnia <zamowienia@stronyaiwroclaw.pl>"
+MAIL_REPLY_TO = "stronyaiwroclaw@gmail.com"

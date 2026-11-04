@@ -3,6 +3,7 @@ import { resolveCart, normalizeCart, cartView, findCoupon } from '../_lib/cart.j
 import { createOrderFromCart, releaseExpired, finalizeOrder, CheckoutError } from '../_lib/orders.js';
 import { startPayment, providerFor, orderUrl } from '../_lib/payments.js';
 import { computeTotals, shippingOptions, paymentOptions } from '../../public/assets/pricing.js';
+import { notifyOrder, later } from '../_lib/mail.js';
 
 // GET /api/checkout?shipping_method=…&payment_method=…
 // Wycena koszyka dla wybranej dostawy i płatności + które bramki działają (symulator, gdy brak kluczy).
@@ -60,11 +61,13 @@ export async function onRequestPost(context) {
     await db.prepare(`INSERT INTO payments (order_id, provider, amount_gr, status) VALUES (?, 'pobranie', ?, 'utworzona')`)
       .bind(order.id, order.total_gr).run();
     await finalizeOrder(db, order.id, { source: 'klient', note: 'Płatność przy odbiorze — przekazane do realizacji.', paid: false });
+    later(context, notifyOrder(env, origin, order.id, 'przyjete'));
     return done(viewUrl);
   }
   if (order.payment_method === 'przelew') {
     await db.prepare(`INSERT INTO payments (order_id, provider, amount_gr, status) VALUES (?, 'przelew', ?, 'utworzona')`)
       .bind(order.id, order.total_gr).run();
+    later(context, notifyOrder(env, origin, order.id, 'przyjete'));
     return done(viewUrl);
   }
 

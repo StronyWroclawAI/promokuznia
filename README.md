@@ -14,7 +14,7 @@ Stack: **Cloudflare Pages + Pages Functions + D1** (później KV, R2, Cron), fro
 | 3 | Koszyk w D1, konto klienta, upload plików do R2, kody rabatowe | gotowe |
 | 4 | Kasa, zamówienia, Stripe + Przelewy24 + bramka testowa, przelew, pobranie, webhooki | gotowe |
 | 5 | InPost ShipX + Geowidget, Furgonetka | — |
-| 6 | Panel admina, maile (Resend), faktury (Fakturownia) | panel admina gotowy; maile i faktury — dalej |
+| 6 | Panel admina, maile (Resend), faktury (Fakturownia) | panel i maile gotowe; faktury — dalej |
 | 7 | Regulamin, RODO, Omnibus, testy | Omnibus już liczony |
 | 8 | Domena, tryb demo, karta portfolio | — |
 
@@ -71,6 +71,7 @@ functions/              API (Pages Functions)
   api/payments/simulate.js    bramka testowa w trybie demo, gdy brak kluczy
   api/downloads/[token].js    produkty cyfrowe: link ważny 7 dni, 5 pobrań
   api/admin/…                 panel: summary, orders, orders/:id (akcje), products, variants/:id, uploads/:id
+  _lib/mail.js                maile przez Resend: szablony HTML + tekst, dziennik wysyłek
   _lib/admin.js               uprawnienia (ADMIN_EMAILS), przejścia statusów, zwroty
   _lib/orders.js              zamówienie z koszyka w jednej transakcji, finalizacja, wygaszanie rezerwacji
   _lib/payments.js            Stripe Checkout, Przelewy24 REST, wspólne oznaczanie płatności
@@ -84,6 +85,7 @@ public/assets/store.js        koszyk i konto: przez API albo lokalnie w podgląd
 migrations/0001_init.sql      pełny schemat: katalog, klienci, koszyk, zamówienia,
                               płatności (idempotencja webhooków), wysyłki, rabaty, bony, pobrania
 migrations/0002_…sql          sesje, reset hasła, pliki klientów
+migrations/0004_maile.sql     link do zamówienia w mailach, dziennik maili
 migrations/0003_…sql          token dostępu do zamówienia, płatności z próbami i symulatorem
 seed/catalog.json             źródło asortymentu — edytuj tutaj
 scripts/build-seed.mjs        catalog.json → seed/seed.sql + public/data/catalog.json
@@ -155,3 +157,21 @@ Adres: `/admin/`. Logujesz się zwykłym kontem sklepu; dostęp mają e-maile z 
 - **Produkty** — cena (każda zmiana trafia do historii cen pod Omnibus), stan magazynowy (nie niżej niż rezerwacje), włączanie wariantów i ukrywanie produktów.
 
 Każda zmiana statusu ma warunek w zapytaniu (`UPDATE … WHERE status = <poprzedni>`), więc dwa kliknięcia albo dwóch adminów naraz nie przestawią zamówienia dwa razy.
+
+## Maile (Resend)
+
+Sekret `RESEND_API_KEY` (Cloudflare → Settings → Variables and Secrets), nadawca i adres do odpowiedzi w `wrangler.toml` (`MAIL_FROM`, `MAIL_REPLY_TO`).
+Domena nadawcy musi być zweryfikowana w Resend (Domains → Add Domain → rekordy DNS).
+
+| Kiedy | Mail do klienta |
+|---|---|
+| Zamówienie z przelewem lub za pobraniem | „Przyjęliśmy zamówienie” — z danymi do przelewu |
+| Płatność online przyjęta / przelew potwierdzony w panelu | „Płatność przyjęta” — z linkami do plików cyfrowych i kodami kart podarunkowych |
+| Panel: projekt do poprawy | treść uwagi od grafika |
+| Panel: projekt zaakceptowany | „drukujemy” |
+| Panel: wysłane | numer przesyłki i link do śledzenia InPost (albo „gotowe do odbioru”) |
+| Panel: zwrot / anulowanie | kwota i termin zwrotu / informacja o anulowaniu |
+| Reset hasła | link ważny 60 min |
+
+Sklep dostaje jedno powiadomienie o każdym nowym zamówieniu na adresy z `ADMIN_EMAILS`.
+Każda wysyłka ląduje w tabeli `emails` i jest widoczna w panelu przy zamówieniu (wysłany / błąd / pominięty). Błąd Resend nie blokuje zamówienia — maile idą w tle (`waitUntil`). W panelu można zaznaczyć „nie wysyłaj maila” przy zmianie statusu.

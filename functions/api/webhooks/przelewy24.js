@@ -1,8 +1,10 @@
 import { problem } from '../../_lib/http.js';
 import { p24VerifyNotification, p24ConfirmTransaction, recordEvent, markPaymentPaid } from '../../_lib/payments.js';
+import { notifyOrder, later } from '../../_lib/mail.js';
 
 // POST /api/webhooks/przelewy24 — urlStatus podany przy rejestracji transakcji
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   const db = env.DB;
   let n;
   try { n = await request.json(); } catch { return problem(400, 'Niepoprawne dane.'); }
@@ -15,7 +17,8 @@ export async function onRequestPost({ request, env }) {
   // potwierdzenie po naszej stronie — bez niego P24 nie przekaże środków
   if (!(await p24ConfirmTransaction(env, n))) return problem(502, 'Weryfikacja w Przelewy24 nie powiodła się.');
   if (await recordEvent(db, 'przelewy24', `${n.sessionId}:${n.orderId}`, n)) {
-    await markPaymentPaid(db, payment, { amount_gr: Number(n.amount), provider_order: String(n.orderId), source_note: `Przelewy24 ${n.orderId}` });
+    const r = await markPaymentPaid(db, payment, { amount_gr: Number(n.amount), provider_order: String(n.orderId), source_note: `Przelewy24 ${n.orderId}` });
+    if (r.finalized) later(context, notifyOrder(env, new URL(request.url).origin, payment.order_id, 'oplacone'));
   }
   return new Response('OK');
 }

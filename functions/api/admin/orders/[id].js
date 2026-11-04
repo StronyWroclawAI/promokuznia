@@ -1,13 +1,14 @@
 import { json, problem, readJson } from '../../../_lib/http.js';
 import { STATUS_LABEL } from '../../../_lib/orders.js';
 import { availableActions, runAction, ActionError } from '../../../_lib/admin.js';
+import { notifyOrder, later } from '../../../_lib/mail.js';
 
 async function load(db, id) {
   return db.prepare('SELECT * FROM orders WHERE id = ?').bind(Number(id)).first();
 }
 
 async function detail(db, order) {
-  const [items, events, payments, shipments, customer] = await db.batch([
+  const [items, events, payments, shipments, customer, emails] = await db.batch([
     db.prepare(
       `SELECT i.id, i.name, i.variant_label, i.sku, i.unit_price_gr, i.vat_rate, i.qty, i.product_type, i.product_slug,
               i.project_status, i.upload_id, u.filename AS upload_name, u.size AS upload_size
@@ -16,7 +17,8 @@ async function detail(db, order) {
     db.prepare('SELECT from_status, to_status, source, note, created_at FROM order_events WHERE order_id = ? ORDER BY id').bind(order.id),
     db.prepare('SELECT provider, provider_ref, provider_order, attempt, amount_gr, refunded_gr, status, created_at, updated_at FROM payments WHERE order_id = ? ORDER BY attempt, id').bind(order.id),
     db.prepare('SELECT carrier, service, tracking_number, status, updated_at FROM shipments WHERE order_id = ?').bind(order.id),
-    db.prepare('SELECT email, first_name, created_at, (SELECT COUNT(*) FROM orders WHERE customer_id = c.id) AS orders FROM customers c WHERE id = ?').bind(order.customer_id ?? 0)
+    db.prepare('SELECT email, first_name, created_at, (SELECT COUNT(*) FROM orders WHERE customer_id = c.id) AS orders FROM customers c WHERE id = ?').bind(order.customer_id ?? 0),
+    db.prepare('SELECT kind, to_email, subject, status, error, created_at FROM emails WHERE order_id = ? ORDER BY id').bind(order.id)
   ]);
   const payment = payments.results.at(-1) ?? null;
   return {
@@ -35,6 +37,7 @@ async function detail(db, order) {
     events: events.results.map((e) => ({ ...e, label: STATUS_LABEL[e.to_status] })),
     payments: payments.results,
     shipments: shipments.results,
+    emails: emails.results,
     actions: availableActions(order, items.results, payment),
     refundable_gr: payment ? payment.amount_gr - payment.refunded_gr : 0
   };
@@ -48,14 +51,27 @@ export async function onRequestGet({ env, params }) {
 }
 
 // POST /api/admin/orders/:id  { action, note?, tracking_number?, amount_gr?, restock? }
-export async function onRequestPost({ env, params, request }) {
+export async function onRequestPost(context) {
+  const { env, params, request } = context;
   const body = await readJson(request);
   if (!body?.action) return problem(400, 'Nie wybrano akcji.');
   const order = await load(env.DB, params.id);
   if (!order) return problem(404, 'Nie ma takiego zamówienia.');
   try {
     const message = await runAction(env, order, String(body.action), body);
-    return json({ message, order: await detail(env.DB, await load(env.DB, params.id)) });
+    const after = await load(env.DB, params.id);
+    // mail do klienta po akcji w panelu
+    const origin = new URL(request.url).origin;
+    const mail = {
+      mark_paid: ['oplacone'],
+      approve_project: ['projekt_zaakceptowany'],
+      request_changes: ['projekt_do_poprawy', { note: String(body.note ?? '').trim(), key: Date.now() }],
+      ship: ['wyslane', { tracking: String(body.tracking_number ?? '').trim().toUpperCase() }],
+      refund: ['zwrot', { amount_gr: Math.round(Number(body.amount_gr)), full: after.status === 'zwrocone', key: Date.now() }],
+      cancel: ['anulowane']
+    }[body.action];
+    if (mail && body.notify !== false) later(context, notifyOrder(env, origin, order.id, mail[0], mail[1]));
+    return json({ message, order: await detail(env.DB, after) });
   } catch (err) {
     if (err instanceof ActionError) return problem(err.status, err.message);
     if (String(err.message).startsWith('Stripe:')) return problem(502, `Stripe odrzucił zwrot: ${err.message.slice(8)}`);

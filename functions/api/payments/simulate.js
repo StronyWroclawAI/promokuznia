@@ -1,5 +1,6 @@
 import { json, problem, readJson } from '../../_lib/http.js';
 import { recordEvent, markPaymentPaid, markPaymentFailed, orderUrl } from '../../_lib/payments.js';
+import { notifyOrder, later } from '../../_lib/mail.js';
 
 // Bramka testowa dla wersji demo bez kluczy Stripe/P24. Przechodzi tę samą ścieżkę co prawdziwy webhook.
 // GET  /api/payments/simulate?ref=sim_...  — dane do ekranu bramki
@@ -18,7 +19,8 @@ export async function onRequestGet({ env, request }) {
   return json({ payment: { number: p.number, amount_gr: p.amount_gr, status: p.status, method: p.payment_method, email: p.email } });
 }
 
-export async function onRequestPost({ env, request }) {
+export async function onRequestPost(context) {
+  const { env, request } = context;
   const body = await readJson(request);
   const p = await load(env, body?.ref);
   if (!p) return problem(404, 'Ta płatność testowa nie istnieje albo wygasła.');
@@ -26,7 +28,8 @@ export async function onRequestPost({ env, request }) {
 
   if (await recordEvent(env.DB, 'symulator', `${p.provider_ref}:${body.outcome}`, { ref: p.provider_ref, outcome: body.outcome })) {
     if (body.outcome === 'paid') {
-      await markPaymentPaid(env.DB, p, { amount_gr: p.amount_gr, provider_order: p.provider_ref, source_note: 'Bramka testowa (tryb demo)' });
+      const r = await markPaymentPaid(env.DB, p, { amount_gr: p.amount_gr, provider_order: p.provider_ref, source_note: 'Bramka testowa (tryb demo)' });
+      if (r.finalized) later(context, notifyOrder(env, new URL(request.url).origin, p.order_id, 'oplacone'));
     } else {
       await markPaymentFailed(env.DB, p, 'Płatność testowa odrzucona.');
     }

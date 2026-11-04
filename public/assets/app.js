@@ -707,7 +707,7 @@ function bindResetRequest() {
     submitForm(form, async (d) => {
       const r = await state.store.resetRequest(d.email);
       document.getElementById('reset-result').innerHTML = `<p class="note">${esc(r.message)}</p>${r.dev_link
-        ? `<p class="small">Tryb deweloperski (mail wyślemy w Etapie 6): <a href="${esc(r.dev_link)}">otwórz link resetu</a></p>` : ''}`;
+        ? `<p class="small">Tryb deweloperski: <a href="${esc(r.dev_link)}">otwórz link resetu</a></p>` : ''}`;
     });
   });
 }
@@ -1092,7 +1092,7 @@ async function bindOrderPage() {
         ${o.billing ? `<div><p class="eyebrow">Faktura</p><p class="small">${esc(o.billing.company)}<br>NIP ${esc(o.billing.nip)}<br>${esc(o.billing.street)}, ${esc(o.billing.postcode)} ${esc(o.billing.city)}</p></div>` : ''}
         <div><p class="eyebrow">Historia</p><ol class="plain history">${o.events.map((e) => `<li><span class="mono small">${new Date(e.at).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' })}</span> ${esc(e.label)}${e.note ? `<br><span class="small">${esc(e.note)}</span>` : ''}</li>`).join('')}</ol></div>
       </div>
-      ${token && !state.customer ? '<p class="small">Zachowaj ten link — to Twój dostęp do zamówienia bez konta. Wysłaliśmy go też mailem (maile ruszą w Etapie 6).</p>' : ''}
+      ${token && !state.customer ? '<p class="small">Zachowaj ten link — to Twój dostęp do zamówienia bez konta. Ten sam link jest w mailu z potwierdzeniem.</p>' : ''}
     </aside>
   </div>`;
 

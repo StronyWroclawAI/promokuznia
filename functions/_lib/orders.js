@@ -133,14 +133,14 @@ export async function createOrderFromCart(context, cart, body) {
     db.prepare(
       `INSERT INTO orders (number, customer_id, email, phone, status, payment_method, shipping_method, locker_code,
          shipping_json, billing_json, subtotal_gr, discount_gr, shipping_gr, gift_card_gr, total_gr, vat_gr,
-         coupon_code, reserved_until, terms_accepted_at, digital_consent_at, customer_note, access_token_hash)
-       VALUES (?, ?, ?, ?, 'czeka_na_platnosc', ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)`
+         coupon_code, reserved_until, terms_accepted_at, digital_consent_at, customer_note, access_token_hash, access_token)
+       VALUES (?, ?, ?, ?, 'czeka_na_platnosc', ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       tmpNumber, data.customer?.id ?? null, input.email, input.phone, input.paymentMethod, input.shippingMethod,
       input.lockerCode, input.shippingAddress ? JSON.stringify(input.shippingAddress) : null,
       input.billing ? JSON.stringify(input.billing) : null,
       totals.subtotal_gr, totals.discount_gr, totals.shipping?.price_gr ?? 0, totals.total_gr, totals.vat_gr,
-      couponUsed, reservedUntil, nowIso(), input.digitalConsent ? nowIso() : null, input.note, accessHash
+      couponUsed, reservedUntil, nowIso(), input.digitalConsent ? nowIso() : null, input.note, accessHash, accessToken
     ),
     // pozycje: kopia nazw i cen z chwili zakupu
     db.prepare(

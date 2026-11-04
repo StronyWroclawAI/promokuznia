@@ -149,7 +149,7 @@ function actionsPanel(o) {
     <div class="act-row"><button class="btn btn-primary" data-act="approve_project">Projekt zaakceptowany</button></div></div>`);
   if (a.has('request_changes')) blocks.push(`<div class="act"><label class="small" for="chg">Uwagi do projektu dla klienta</label>
     <textarea id="chg" rows="2" placeholder="np. logo w niskiej rozdzielczości — prosimy o plik wektorowy"></textarea>
-    <div class="act-row"><button class="btn" data-act="request_changes" data-note="#chg">Zapisz: projekt do poprawy</button></div></div>`);
+    <div class="act-row"><button class="btn" data-act="request_changes" data-note="#chg">Wyślij klientowi: projekt do poprawy</button></div></div>`);
   if (a.has('ship')) blocks.push(o.shipping_method === 'odbior'
     ? `<div class="act"><div class="act-row"><button class="btn btn-primary" data-act="ship">Gotowe do odbioru</button></div></div>`
     : `<div class="act"><label class="small" for="trk">Numer przesyłki ${o.locker_code ? `(Paczkomat <span class="mono">${esc(o.locker_code)}</span>)` : ''}</label>
@@ -168,7 +168,8 @@ function actionsPanel(o) {
   if (a.has('cancel')) blocks.push(`<div class="act"><div class="act-row"><button class="btn btn-danger" data-act="cancel" data-confirm="1">Anuluj zamówienie</button></div><p class="small">Towar wróci do sprzedaży.</p></div>`);
   blocks.push(`<div class="act"><label class="small" for="nt">Notatka wewnętrzna</label><textarea id="nt" rows="2"></textarea>
     <div class="act-row"><button class="btn" data-act="note" data-note="#nt">Dodaj notatkę</button></div></div>`);
-  return `<section class="actions" aria-label="Akcje"><h2 class="h3">Co dalej</h2>${blocks.join('')}</section>`;
+  return `<section class="actions" aria-label="Akcje"><h2 class="h3">Co dalej</h2>${blocks.join('')}
+    <label class="check"><input type="checkbox" id="no-mail"><span>Nie wysyłaj maila do klienta przy tej zmianie</span></label></section>`;
 }
 
 async function viewOrder(id) {
@@ -226,6 +227,7 @@ async function viewOrder(id) {
             ${o.shipments.map((s) => `<dt>Przesyłka</dt><dd class="mono">${esc(s.tracking_number)}<br><span class="small">${esc(s.status)}</span></dd>`).join('')}
           </dl></div>
           <div><p class="eyebrow">Faktura</p>${bill ? `<dl class="kv"><dt>Firma</dt><dd>${esc(bill.company)}</dd><dt>NIP</dt><dd class="mono">${esc(bill.nip)}</dd><dt>Adres</dt><dd>${esc(bill.street)}<br>${esc(bill.postcode)} ${esc(bill.city)}</dd></dl>` : '<p class="small">Paragon (klient nie prosił o fakturę)</p>'}</div>
+          <div><p class="eyebrow">Maile do klienta</p>${o.emails.length ? `<ul class="plain mail-log">${o.emails.map((m) => `<li><span class="small mono">${dt(m.created_at)}</span> ${esc(m.subject)}<br><span class="small ${m.status === 'blad' ? 'low' : ''}">${esc(m.to_email)} · ${esc({ wyslany: 'wysłany', blad: 'błąd', pominiety: 'nie wysłany — brak klucza Resend' }[m.status])}${m.error ? ` · ${esc(m.error)}` : ''}</span></li>`).join('')}</ul>` : '<p class="small">Jeszcze żadnego.</p>'}</div>
           <div><p class="eyebrow">Zgody</p><p class="small">Regulamin: ${dt(o.terms_accepted_at)}${o.digital_consent_at ? `<br>Treści cyfrowe od razu: ${dt(o.digital_consent_at)}` : ''}</p></div>
         </div>
       </aside>
@@ -248,6 +250,8 @@ async function viewOrder(id) {
       body.restock = !!document.getElementById('restock')?.checked;
     }
     main.querySelectorAll('[data-act]').forEach((b) => { b.disabled = true; });
+    const quiet = document.getElementById('no-mail');
+    if (quiet?.checked) body.notify = false;
     api('POST', `/api/admin/orders/${o.id}`, body)
       .then((r) => { toast(r.message); return viewOrder(o.id); })
       .catch((err) => { toast(err.message); main.querySelectorAll('[data-act]').forEach((b) => { b.disabled = false; }); });

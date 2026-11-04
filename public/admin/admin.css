@@ -81,6 +81,7 @@ body.admin { background: var(--paper); }
 .timeline li { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: var(--s-3); padding: var(--s-2) 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
 .timeline .src { font: 500 11px/1 var(--f-mono); text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-left: 6px; }
 .file-link { font-size: 13px; }
+.mail-log { gap: var(--s-2); font-size: 14px; }
 
 /* produkty */
 .prod-name { font-weight: 600; }

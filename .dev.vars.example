@@ -1,0 +1,24 @@
+# Skopiuj do .dev.vars (plik jest w .gitignore). Na produkcji: npx wrangler pages secret put NAZWA
+# Etap 4 — płatności
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+P24_MERCHANT_ID=
+P24_POS_ID=
+P24_API_KEY=
+P24_CRC=
+P24_SANDBOX=1                 # 0 = produkcja (secure.przelewy24.pl)
+# Opcjonalnie: tylko te metody w Stripe Checkout. Puste = wszystkie włączone w panelu Stripe.
+# STRIPE_METHODS=card,blik,p24
+# Bez kluczy Stripe/P24 i przy SHOP_MODE=demo płatność online przechodzi przez bramkę testową w sklepie
+# Panel admina: e-maile kont sklepu z dostępem do /admin/ (po przecinku)
+ADMIN_EMAILS=twoj@email.pl
+# Etap 5 — wysyłki
+INPOST_API_TOKEN=
+INPOST_ORGANIZATION_ID=
+INPOST_GEOWIDGET_TOKEN=
+# Etap 6 — maile i faktury
+RESEND_API_KEY=re_...           # bez klucza maile tylko trafiają do logu i dziennika w panelu
+FAKTUROWNIA_DOMAIN=
+FAKTUROWNIA_API_TOKEN=
+# Tylko lokalnie, do Etapu 6: link resetu hasła wraca w odpowiedzi API
+EXPOSE_RESET_LINKS=1
